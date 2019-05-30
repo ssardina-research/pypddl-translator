@@ -42,3 +42,6 @@ class Predicate(object):
             return self._name
         else:
             return '{0}({1})'.format(self._name, ', '.join(map(str, self._args)))
+
+    def __repr__(self):
+        return "Predicate(name = %s, args = %s)" % (self._name, self._args)

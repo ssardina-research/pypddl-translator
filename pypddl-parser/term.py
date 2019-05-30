@@ -59,3 +59,6 @@ class Term(object):
             return '{0} - {1}'.format(self._value, self._type)
         if self.is_constant():
             return '{0}'.format(self._value)
+
+    def __repr__(self):
+        return "Term(name = %s, type = %s, value = %s)" % (self._name, self._type, self._value)
