@@ -17,6 +17,13 @@
 class Action(object):
 
     def __init__(self, name, params, precond, effects):
+        """
+
+        :param name: name of the operator (e.g., 'pick-up')
+        :param params:  list of Term objects (e.g., '?x' of type 'blocks')
+        :param precond:
+        :param effects:
+        """
         self._name    = name
         self._params  = params
         self._precond = precond
@@ -42,4 +49,17 @@ class Action(object):
         operator_str  = '{0}({1})\n'.format(self._name, ', '.join(map(str, self._params)))
         operator_str += '>> precond: {0}\n'.format(', '.join(map(str, self._precond)))
         operator_str += '>> effects: {0}\n'.format(', '.join(map(str, self._effects)))
+        return operator_str
+
+    def __repr__(self):
+        operator_str  = '\t(:action {name} \n' \
+                        '\t\t:parameters ({param})\n' \
+                        '\t\t:precondition (and {prec})\n' \
+                        '\t\t:effect (and {effect})\n' \
+                        '\t)'.\
+            format(name = self._name,
+                   param = ' '.join(repr(p) for p in self._params),
+                   prec = ' '.join(repr(p) for p in self._precond),
+                   effect = ' '.join(repr(e[1]) for e in self._effects)
+                   )
         return operator_str

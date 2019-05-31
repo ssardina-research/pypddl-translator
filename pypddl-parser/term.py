@@ -17,6 +17,19 @@
 class Term(object):
 
     def __init__(self, **kwargs):
+        """
+            Construct a Term object
+
+            for variables ?x name is '?x'
+            for typed variables like ?x - block, name is '?x' and type is 'block'
+            for constants like in (open e), name and type are None and value is 'e'
+
+
+        :param kwargs: up to three kwarg arguments that are all strings:
+            name = the name of the term if variable (for example '?x' or 'table')
+            type = the type of the term (for example 'blocks')
+            value = the value of the term if constant
+        """
         self._name  = kwargs.get('name',  None)
         self._type  = kwargs.get('type',  None)
         self._value = kwargs.get('value', None)
@@ -61,4 +74,11 @@ class Term(object):
             return '{0}'.format(self._value)
 
     def __repr__(self):
-        return "Term(name = %s, type = %s, value = %s)" % (self._name, self._type, self._value)
+        if self.is_variable() and self.is_typed():
+            return '{0} - {1}'.format(self._name, self._type)
+        if self.is_variable():
+            return '{0}'.format(self._name)
+        if self.is_constant() and self.is_typed():
+            return '{0} - {1}'.format(self._value, self._type)
+        if self.is_constant():
+            return '{0}'.format(self._value)

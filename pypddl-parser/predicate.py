@@ -19,7 +19,16 @@ from term import Term
 
 class Predicate(object):
 
+    # name
     def __init__(self, name, args=[]):
+        """
+            Construct a Predicate object
+
+        :param name: string with the name of the predicate
+        :param args: list of Term objects
+        """
+
+
         self._name = name
         self._args = args
 
@@ -35,6 +44,7 @@ class Predicate(object):
     def arity(self):
         return len(self._args)
 
+
     def __str__(self):
         if self._name == '=':
             return '{0} = {1}'.format(str(self._args[0]), str(self._args[1]))
@@ -43,5 +53,11 @@ class Predicate(object):
         else:
             return '{0}({1})'.format(self._name, ', '.join(map(str, self._args)))
 
+
     def __repr__(self):
-        return "Predicate(name = %s, args = %s)" % (self._name, self._args)
+        if self._name == '=':
+            return '(= {0} {1})'.format(str(self._args[0]), str(self._args[1]))
+        elif self.arity == 0:
+            return '({})'.format(self._name)
+        else:
+            return '({0} {1})'.format(self._name, ' '.join(map(str, self._args)))

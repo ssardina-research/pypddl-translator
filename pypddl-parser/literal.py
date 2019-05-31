@@ -39,7 +39,10 @@ class Literal(object):
         return Literal(predicate, False)
 
     def __repr__(self):
-        return str(self)
+        if self.is_positive():
+            return '{}'.format(repr(self._predicate))
+        elif self.is_negative():
+            return '(not {})'.format(repr(self._predicate))
 
     def __str__(self):
         if self.is_positive():
@@ -50,3 +53,5 @@ class Literal(object):
             return '{0} != {1}'.format(lhs, rhs)
         if self.is_negative():
             return 'not {}'.format(str(self._predicate))
+
+
