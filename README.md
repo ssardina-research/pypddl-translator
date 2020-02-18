@@ -213,7 +213,7 @@ Parse a domain and planning problem and save them into new files:
 
 Generate MTP domain and problem from a labeled domain and problem description:
 
-    python3 main.py labeled-pddl/no-running/labeled-domain.pddl labeled-pddl/no-running/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
+    python3 main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
 
 
 # License
