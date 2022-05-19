@@ -17,7 +17,7 @@ This is an significant extension and refactoring of [pypddl-parser](https://gith
 **Planning domains:**
 
 * Supports the ```:requirements :strips, :typing, :equality, :probabilistic-effects```.
-* Supports non-deterministic effects via `oneof` keyword.
+* Supports non-deterministic effects via `oneof` keyword on 1ND normal form (i.e., actions have one single `oneof`, no nesting).
 * Supports relations between types:  `(:types type1 type2 ... typen - type ...)`
 * Supports conditional effects via `when` keyword.
 
