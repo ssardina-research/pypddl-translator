@@ -277,41 +277,48 @@ def p_precond_def(p):
 
 
 def p_effects_def(p):
-    '''effects_def : EFFECT_KEY effects_lst'''  # :effect ....
+    '''effects_def : EFFECT_KEY act_effects_lst'''  # :effect ....
     if len(p) == 3:
         p[0] = p[2]
 
-def p_effects_lst(p):   # and AND of effects: all must happen
-    '''effects_lst : effect effects_lst
-                    | LPAREN AND_KEY effects_lst RPAREN
-                    | effect'''
-    if len(p) == 3:
-        p[0] = [p[1]] + p[2]
-    elif len(p) == 5:
-        p[0] = p[3]
-    elif len(p) == 2:
-        p[0] = p[1]
-
-def p_effect(p):
-    '''effect : deterministic_effect
-                | LPAREN WHEN_KEY deterministic_effect effects_lst RPAREN
-                | LPAREN ONEOF_KEY effects_lst RPAREN
-                | LPAREN ONEOF_KEY label_effects_lst RPAREN'''
+def p_act_effects_lst(p):   # and AND of effects: all must happen
+    '''act_effects_lst : atomic_effect
+                | LPAREN AND_KEY and_effects_lst RPAREN
+                | LPAREN ONEOF_KEY oneof_effects_lst RPAREN
+                | LPAREN WHEN_KEY deterministic_effect act_effects_lst RPAREN'''
     if len(p) == 2:
         p[0] = p[1]
+    elif len(p) == 5 and p[2] == 'and': # this is not nice, we should use AND_KEY
+        p[0] = p[3]
+    elif len(p) == 5 and p[2] == 'oneof':
+        p[0] = ("oneof", p[3])
     elif len(p) == 6:   # when
         p[0] = ("when", p[3], p[4])
-    elif len(p) == 5:
-        p[0] = ("oneof", p[3])
 
+def p_and_effects_lst(p):   # and AND of effects: all must happen
+    '''and_effects_lst : act_effects_lst
+                    | act_effects_lst and_effects_lst'''
+    if len(p) == 2:
+        p[0] = p[1]
+    if len(p) == 3:
+        p[0] = [p[1]] + p[2]
 
-def p_label_effects_lst(p):
-    '''label_effects_lst : LPAREN NAME effect RPAREN label_effects_lst
-                   | LPAREN NAME effect RPAREN'''
-    if len(p) == 6:
-        p[0] = [("label", p[2], p[3])] + p[5]
-    elif len(p) == 5:
-        p[0] = ("label", p[2], p[3])
+def p_oneof_effects_lst(p):   # and AND of effects: all must happen
+    '''oneof_effects_lst : oneof_effect
+                    | oneof_effect oneof_effects_lst'''
+    if len(p) == 2:
+        p[0] = p[1]
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+
+def p_oneof_effect(p):   # and AND of effects: all must happen
+    '''oneof_effect : act_effects_lst
+                    | LPAREN NAME act_effects_lst RPAREN'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    if len(p) == 3:
+        p[0] = [("label", p[2], p[3])]
+
 
 
 # From now on, only deterministic effects
@@ -319,29 +326,27 @@ def p_label_effects_lst(p):
 # can have AND as prefix or just the list
 def p_deterministic_effect(p):
     '''deterministic_effect : LPAREN AND_KEY atomic_effects_lst RPAREN
-                            | atomic_effects_lst'''    # may not have AND explicitly
+                            | atomic_effect'''    # may not have AND explicitly
     if len(p) == 2:
         p[0] = p[1]   # effect is just on literal, no AND
     elif len(p) == 5:
         p[0] = p[3] # effect description has an AND
 
 def p_atomic_effects_lst(p):
-    '''atomic_effects_lst : atomic_effect effects_lst
+    '''atomic_effects_lst : atomic_effect atomic_effects_lst
                    | atomic_effect'''
     if len(p) == 2:
-        p[0] = [p[1]]
+        p[0] = p[1]
     elif len(p) == 3:
-        p[0] = [p[1]] + p[2]
+        p[0] = p[1] + p[2]
 
 def p_atomic_effect(p):
     '''atomic_effect : literal
               | LPAREN PROBABILISTIC_KEY PROBABILITY literal RPAREN'''  # needs to change
     if len(p) == 2:
-        p[0] = (1.0, p[1])
+        p[0] = [(1.0, p[1])]
     elif len(p) == 6:
-        p[0] = (p[3], p[4])
-    elif len(p) == 5:
-        p[0] = p[3]
+        p[0] = [(p[3], p[4])]
 
 
 
