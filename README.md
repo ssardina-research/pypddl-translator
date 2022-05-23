@@ -93,6 +93,8 @@ $ pip install ply
 
 ### Labeled Planning Domains
 
+Here non-deterministic `oneof` effects may be labelled with a name.
+
 ```
 (define (domain no_running_1)
 
@@ -180,6 +182,8 @@ $ pip install ply
 
 ### Labeled Planning Problems
 
+Here disjunct goals via `oneof` may be labelled with names.
+
 ```
 (define (problem p1)
 (:domain no_running_1)
@@ -206,7 +210,7 @@ The domain markers (`d3`,`d2`, and `d1` in this example), must appear ordered bo
 Parse a domain and planning problem and print them both on console:
 
 ```shell
-$ python3 main.py pddl/blocksworld/domain.pddl pddl/blocksworld/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
+$ python main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
 ```
 
 Parse a domain and planning problem and save them into new files:
