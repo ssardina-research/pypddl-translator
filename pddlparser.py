@@ -311,12 +311,12 @@ def p_oneof_effects_lst(p):   # and AND of effects: all must happen
     if len(p) == 3:
         p[0] = p[1] + p[2]
 
-def p_oneof_effect(p):   # and AND of effects: all must happen
+def p_oneof_effect(p):   # list of effects or labeled effects
     '''oneof_effect : act_effects_lst
                     | LPAREN NAME act_effects_lst RPAREN'''
     if len(p) == 2:
         p[0] = [p[1]]
-    if len(p) == 3:
+    if len(p) == 5:
         p[0] = [("label", p[2], p[3])]
 
 
