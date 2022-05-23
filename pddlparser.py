@@ -297,9 +297,9 @@ def p_act_effects_lst(p):   # and AND of effects: all must happen
     elif len(p) == 5 and p[2] == 'and': # this is not nice, we should use AND_KEY
         p[0] = p[3]
     elif len(p) == 5 and p[2] == 'oneof':
-        p[0] = ("oneof", p[3])
+        p[0] = [("oneof", p[3])]
     elif len(p) == 6:   # when
-        p[0] = ("when", p[3], p[4])
+        p[0] = [("when", p[3], p[4])]
 
 def p_and_effects_lst(p):   # and AND of effects: all must happen
     '''and_effects_lst : act_effects_lst
@@ -511,9 +511,12 @@ def p_init_def(p):
         p[0] = p[5]
 
 def p_goal_def(p):
-    '''goal_def : LPAREN GOAL_KEY LPAREN AND_KEY literals_lst RPAREN RPAREN'''
+    '''goal_def : LPAREN GOAL_KEY LPAREN AND_KEY literals_lst RPAREN RPAREN
+                | LPAREN GOAL_KEY literals_lst RPAREN'''
     if len(p) == 8:
         p[0] = p[5]
+    if len(p) == 5:
+        p[0] = p[3]
 
 
 

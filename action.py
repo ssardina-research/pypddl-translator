@@ -58,7 +58,7 @@ class Action(object):
  
     @staticmethod
     def __effect_to_str(effect):
-        print(effect)
+        # print(effect)
         if isinstance(effect, list):    # list of effects: and them all
             if len(effect) > 1:
                 return '(and {})'.format(' '.join(Action.__effect_to_str(x) for x in effect))
@@ -70,7 +70,6 @@ class Action(object):
             if effect[0] == "when":
                 return f'(when {Action.__effect_to_str(effect[1])}) {Action.__effect_to_str(effect[2])})'
             if effect[0] == "oneof":
-                print('sssssssssssssssssss')
                 return '(oneof {})'.format(' '.join(Action.__effect_to_str(x) for x in effect[1]))
             if effect[0] == "label":
                 return f'({effect[1]} {Action.__effect_to_str(effect[2])})'
@@ -83,10 +82,10 @@ class Action(object):
 
     def __repr__(self):
         # First compute effect string - self.effects is a list
-        print(self._effects)
+        # print(self._effects)
         effect_str = Action.__effect_to_str(self._effects)
-        print(effect_str)
-        print("====================")
+        # print(effect_str)
+        # print("====================")
         
         
         # if isinstance(self._effects[0], list): # if only element in list is a list then it is oneof (...) 
