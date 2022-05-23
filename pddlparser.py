@@ -36,9 +36,11 @@ tokens = (
     'DOMAIN_KEY',
     'REQUIREMENTS_KEY',
     'STRIPS_KEY',
+    'NEGPRECOND_KEY',
     'EQUALITY_KEY',
     'TYPING_KEY',
     'PROBABILISTIC_EFFECTS_KEY',
+    'NONDETERMINISTIC_KEY',
     'TYPES_KEY',
     'CONSTANTS_KEY',
     'PREDICATES_KEY',
@@ -74,6 +76,8 @@ reserved = {
     ':equality'                 : 'EQUALITY_KEY',
     ':typing'                   : 'TYPING_KEY',
     ':probabilistic-effects'    : 'PROBABILISTIC_EFFECTS_KEY',
+    ':non-deterministic'        : 'NONDETERMINISTIC_KEY',
+    ':negative-preconditions'   : "NEGPRECOND_KEY",
     ':types'                    : 'TYPES_KEY',
     ':predicates'               : 'PREDICATES_KEY',
     ':action'                   : 'ACTION_KEY',
@@ -184,6 +188,8 @@ def p_require_key(p):
     '''require_key : STRIPS_KEY
                    | EQUALITY_KEY
                    | TYPING_KEY
+                   | NONDETERMINISTIC_KEY
+                   | NEGPRECOND_KEY
                    | PROBABILISTIC_EFFECTS_KEY'''
     p[0] = str(p[1])
 
