@@ -122,12 +122,16 @@ if __name__ == '__main__':
     # print("==========> Domain parsed into memory....")
 
     problem = None
-    if type(domain) is tuple:   # the first file contained both domain + problem
+    
+    # the first file already contained both domain + problem
+    # So, extract domain and problem
+    if type(domain) is tuple:
         problem = domain[1]
         domain = domain[0]
 
-
-    if len(args['domain-problem']) == 2:    # two files have been given: domain and problem
+    # two files have been given: domain and problem, load problem now
+    if len(args['domain-problem']) == 2:
+        print(args['domain-problem'][1])
         problem = PDDLParser.parse(args['domain-problem'][1])
         # print("==========> Problem parsed into memory....")
 
