@@ -25,12 +25,12 @@ This is an significant extension and refactoring of [pypddl-parser](https://gith
 * Planning problems, via keyword  `problem`.
 * Labeled domains (labeled effects) for multi-tier planning problems (MTP).
 
-## Install
+## Setup
 
-Please make sure you have the ```ply``` library installed on your system. If you don't have it, you can use pip3 to install it.
+Please make sure you have the [`ply` library](https://www.dabeaz.com/ply/) installed on your system to perform parsing.
 
-```bash 
-$ pip3 install ply
+```shell
+$ pip install ply
 ```
 
 ## Formats
