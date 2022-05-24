@@ -63,11 +63,26 @@ class Domain(object):
     def operators(self):
         return self._operators[:]
 
+    @requirements.setter
+    def requirements(self, requirements):
+        self._requirements = requirements
+
+    @predicates.setter
+    def predicates(self, predicates):
+        self._predicates = predicates
+
+    @constants.setter
+    def constants(self, constants):
+        self._constants = constants
+
+    @types.setter
+    def types(self, types):
+        self._types = types
+
     @operators.setter
     def operators(self, operators):
         self._operators = operators
 
-    #TODO: out of date
     def __str__(self):
         domain_str  = '@ Domain: {0}\n'.format(self._name)
         domain_str += '>> requirements: {0}\n'.format(', '.join(self._requirements))
