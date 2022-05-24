@@ -20,11 +20,11 @@
 			( handempty )
 		)
 		:effect ( and
-			( not ( ontable ?x ) )
-			( not ( clear ?x ) )
-			( not ( handempty ) )
-			( holding ?x )
-		)
+						( not ( ontable ?x ) )
+						( not ( clear ?x ) )
+						( not ( handempty ) )
+						( holding ?x ) 
+				)
 	)
 
 	( :action put-down

@@ -36,9 +36,11 @@ tokens = (
     'DOMAIN_KEY',
     'REQUIREMENTS_KEY',
     'STRIPS_KEY',
+    'NEGPRECOND_KEY',
     'EQUALITY_KEY',
     'TYPING_KEY',
     'PROBABILISTIC_EFFECTS_KEY',
+    'NONDETERMINISTIC_KEY',
     'TYPES_KEY',
     'CONSTANTS_KEY',
     'PREDICATES_KEY',
@@ -74,6 +76,8 @@ reserved = {
     ':equality'                 : 'EQUALITY_KEY',
     ':typing'                   : 'TYPING_KEY',
     ':probabilistic-effects'    : 'PROBABILISTIC_EFFECTS_KEY',
+    ':non-deterministic'        : 'NONDETERMINISTIC_KEY',
+    ':negative-preconditions'   : "NEGPRECOND_KEY",
     ':types'                    : 'TYPES_KEY',
     ':predicates'               : 'PREDICATES_KEY',
     ':action'                   : 'ACTION_KEY',
@@ -184,6 +188,8 @@ def p_require_key(p):
     '''require_key : STRIPS_KEY
                    | EQUALITY_KEY
                    | TYPING_KEY
+                   | NONDETERMINISTIC_KEY
+                   | NEGPRECOND_KEY
                    | PROBABILISTIC_EFFECTS_KEY'''
     p[0] = str(p[1])
 
@@ -274,94 +280,86 @@ def p_precond_def(p):
     elif len(p) == 6:
         p[0] = p[4]
 
+
+
 def p_effects_def(p):
-    '''effects_def : EFFECT_KEY effect_body'''
+    '''effects_def : EFFECT_KEY act_effects_lst'''  # :effect ....
     if len(p) == 3:
         p[0] = p[2]
 
-def p_effect_body(p):
-    '''effect_body : LPAREN NAME unlabeled_effect RPAREN
-                    | effect_body LPAREN NAME unlabeled_effect RPAREN
-                    | unlabeled_effect'''
-    if len(p) == 5:
-        p[0] = [(p[2],p[3])]
-    elif len(p) == 6:
-        p[0] = p[1] + [(p[3],p[4])]
-    elif len(p) == 2:
+def p_act_effects_lst(p):   # and AND of effects: all must happen
+    '''act_effects_lst : atomic_effect
+                | LPAREN AND_KEY and_effects_lst RPAREN
+                | LPAREN ONEOF_KEY oneof_effects_lst RPAREN
+                | LPAREN WHEN_KEY deterministic_effect act_effects_lst RPAREN'''
+    if len(p) == 2:
         p[0] = p[1]
-
-def p_unlabeled_effect(p):
-    '''unlabeled_effect : LPAREN ONEOF_KEY effect_body RPAREN
-                        | deterministic_effect unlabeled_effect
-                        | deterministic_effect'''
-    if len(p) == 5:
+    elif len(p) == 5 and p[2] == 'and': # this is not nice, we should use AND_KEY
         p[0] = p[3]
-    elif len(p) == 2:
-        p[0] = [p[1]]
-    elif len(p) == 3:
+    elif len(p) == 5 and p[2] == 'oneof':
+        p[0] = [("oneof", p[3])]
+    elif len(p) == 6:   # when
+        p[0] = [("when", p[3], p[4])]
+
+def p_and_effects_lst(p):   # and AND of effects: all must happen
+    '''and_effects_lst : act_effects_lst
+                    | act_effects_lst and_effects_lst'''
+    if len(p) == 2:
+        p[0] = p[1]
+    if len(p) == 3:
         p[0] = [p[1]] + p[2]
 
+def p_oneof_effects_lst(p):   # and AND of effects: all must happen
+    '''oneof_effects_lst : oneof_effect
+                    | oneof_effect oneof_effects_lst'''
+    if len(p) == 2:
+        p[0] = p[1]
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+
+def p_oneof_effect(p):   # list of effects or labeled effects
+    '''oneof_effect : act_effects_lst
+                    | LPAREN NAME act_effects_lst RPAREN'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    if len(p) == 5:
+        p[0] = [("label", p[2], p[3])]
+
+
+
+# From now on, only deterministic effects
+# a deterministic effect is a list of atomic (probabilistic) literals
+# can have AND as prefix or just the list
 def p_deterministic_effect(p):
-    '''deterministic_effect : LPAREN AND_KEY effects_lst RPAREN
-                            | effects_lst'''
+    '''deterministic_effect : LPAREN AND_KEY atomic_effects_lst RPAREN
+                            | atomic_effect'''    # may not have AND explicitly
     if len(p) == 2:
         p[0] = p[1]   # effect is just on literal, no AND
     elif len(p) == 5:
         p[0] = p[3] # effect description has an AND
 
-def p_when_effects(p):
-    '''when_effects : when_if when_then '''
-    p[0] = [p[1],p[2]] # it is a list, with the element in [0] being the conditions and the element in [1] being the effects
-
-def p_when_if(p):
-    '''when_if : simple_effect
-                | LPAREN AND_KEY simple_effects_lst RPAREN'''
+def p_atomic_effects_lst(p):
+    '''atomic_effects_lst : atomic_effect atomic_effects_lst
+                   | atomic_effect'''
     if len(p) == 2:
-        p[0] = [p[1]]
-    elif len(p) == 5:
-        p[0] = p[3]
-
-def p_when_then(p):
-    '''when_then : simple_effect
-                | LPAREN AND_KEY simple_effects_lst RPAREN'''
-    if len(p) == 2:
-        p[0] = [p[1]]
-    elif len(p) == 5:
-        p[0] = p[3]
-
-def p_effects_lst(p):
-    '''effects_lst : effect effects_lst
-                   | effect'''
-    if len(p) == 2:
-        p[0] = [p[1]]
+        p[0] = p[1]
     elif len(p) == 3:
-        p[0] = [p[1]] + p[2]
+        p[0] = p[1] + p[2]
 
-def p_simple_effects_lst(p):
-    '''simple_effects_lst : simple_effect simple_effects_lst
-                   | simple_effect'''
+def p_atomic_effect(p):
+    '''atomic_effect : literal
+              | LPAREN PROBABILISTIC_KEY PROBABILITY literal RPAREN'''  # needs to change
     if len(p) == 2:
-        p[0] = [p[1]]
-    elif len(p) == 3:
-        p[0] = [p[1]] + p[2]
-
-
-def p_effect(p):
-    '''effect : literal
-              | LPAREN PROBABILISTIC_KEY PROBABILITY literal RPAREN
-              | LPAREN WHEN_KEY when_effects RPAREN'''
-    if len(p) == 2:
-        p[0] = (1.0, p[1])
+        p[0] = [(1.0, p[1])]
     elif len(p) == 6:
-        p[0] = (p[3], p[4])
-    elif len(p) == 5:
-        p[0] = p[3]
+        p[0] = [(p[3], p[4])]
 
-def p_simple_effect(p):
-    '''simple_effect : literal'''
-    if len(p) == 2:
-        p[0] = (1.0, p[1])
 
+
+
+###################################################3
+# Rules for LITERALS, etc
+###################################################3
 
 def p_literals_lst(p):
     '''literals_lst : literal literals_lst
@@ -514,14 +512,11 @@ def p_init_def(p):
 
 def p_goal_def(p):
     '''goal_def : LPAREN GOAL_KEY LPAREN AND_KEY literals_lst RPAREN RPAREN
-                | LPAREN GOAL_KEY literal RPAREN
-                | LPAREN GOAL_KEY LPAREN ONEOF_KEY effect_body RPAREN RPAREN'''
+                | LPAREN GOAL_KEY literals_lst RPAREN'''
     if len(p) == 8:
         p[0] = p[5]
-    elif len(p) == 5:
-        p[0] = [p[3]]
-    elif len(p) == 14:
-        p[0] = (p[6],p[9])
+    if len(p) == 5:
+        p[0] = p[3]
 
 
 

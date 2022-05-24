@@ -55,39 +55,47 @@ class Action(object):
         operator_str += '>> effects: {0}\n'.format(', '.join(map(str, self._effects)))
         return operator_str
 
+ 
     @staticmethod
-    def __det_effect_to_str(effect):
-        if len(effect) > 1  and isinstance(effect[0][0],float): # No labeled effects
-            if all(isinstance(x,tuple) for x in effect): # Conjunction of predicates as effects
-                effect_str = '(and {})'.format(' '.join(repr(e[1]) for e in effect))
-            else: # We have conditional effects
-                effect_str = '(and '
-                for x in effect:
-                    if isinstance(x,tuple): # Simple predicate
-                        effect_str += repr(x[1])
-                    else: # Conditional effect
-                        effect_str += ' (when '
-                        for set_of_pred in x:
-                            effect_str += '(and {})'.format(' '.join(repr(y[1]) for y in set_of_pred))
-                        effect_str += ')'
-
-        elif len(effect) == 1:
-            effect_str = ' '.join(repr(e[1]) for e in effect)
-        elif len(effect) > 1 and not isinstance(effect[0][0],float): # Labeled effects
-            effect_str = '(' + effect[0] + ' (and ' + ' '.join(repr(pred[1]) for pred in effect[1][0]) + '))\n\t\t'
+    def __effect_to_str(effect):
+        # print(effect)
+        if isinstance(effect, list):    # list of effects: and them all
+            if len(effect) > 1:
+                return '(and {})'.format(' '.join(Action.__effect_to_str(x) for x in effect))
+            else:
+                return ' '.join(Action.__effect_to_str(x) for x in effect)
+        elif isinstance(effect, tuple) and isinstance(effect[0], float):    # probabilistic atomic (1.0, literal)
+            return repr(effect[1])  # representation of the literal
+        elif isinstance(effect, tuple) and isinstance(effect[0], str):    # typed effect: when, oneof, labeled
+            if effect[0] == "when":
+                return f'(when {Action.__effect_to_str(effect[1])}) {Action.__effect_to_str(effect[2])})'
+            if effect[0] == "oneof":
+                return '(oneof {})'.format(' '.join(Action.__effect_to_str(x) for x in effect[1]))
+            if effect[0] == "label":
+                return f'({effect[1]} {Action.__effect_to_str(effect[2])})'
+            else:
+                print(f"This is a tuple with first argument str but cannot recognise type of first element: {effect[0]}")
         else:
             print("Something very wrong, an effect is empty...")
-        return effect_str
+
+
 
     def __repr__(self):
-        effect_str = ''
-        if len(self._effects) == 1 and isinstance(self.effects[0][0][0],float) : # No labeled effects
-            effect_str = Action.__det_effect_to_str(self._effects[0])
-        elif len(self._effects) > 1:
-            effect_str = '(oneof {})'.format(' '.join(Action.__det_effect_to_str(x) for x in self._effects))
-        elif len(self._effects) == 1 and isinstance(self.effects[0][0][0][0],str): # Labeled effects
-            effect_str = '(oneof {})'.format(' '.join(Action.__det_effect_to_str(x) for x in self._effects[0]))
+        # First compute effect string - self.effects is a list
+        # print(self._effects)
+        effect_str = Action.__effect_to_str(self._effects)
+        # print(effect_str)
+        # print("====================")
+        
+        
+        # if isinstance(self._effects[0], list): # if only element in list is a list then it is oneof (...) 
+        #     effect_str = Action.__det_effect_to_str(self._effects[0])
+        # elif len(self._effects) == 1 and isinstance(self.effects[0][0][0][0], str): # Labeled effects
+        #     effect_str = '(oneof {})'.format(' '.join(Action.__det_effect_to_str(x) for x in self._effects[0]))
+        # elif len(self._effects) > 1:
+        #     effect_str = '(oneof {})'.format(' '.join(Action.__det_effect_to_str(x) for x in self._effects))
 
+        # Second compute precondition string
         def_precond = ''
         for p in self._precond:
             if not isinstance(p,list):
