@@ -1,3 +1,8 @@
+noteId: "3eff66b0de2e11ec968e8b06892a55ca"
+tags: []
+
+---
+
 # pypddl-translator
 
 PDDL's domain and problem parser+translator in Python3 using [ply](http://www.dabeaz.com/ply/) library. 
@@ -32,6 +37,28 @@ Please make sure you have the [`ply` library](https://www.dabeaz.com/ply/) insta
 ```shell
 $ pip install ply
 ```
+
+## Usage examples
+
+Parse a domain and planning problem and print them both on console:
+
+```shell
+$ python main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
+```
+
+Parse a domain and planning problem and save them into new files:
+
+```shell
+python3 main.py pddl/blocksworld/domain.pddl pddl/blocksworld/problems/probBLOCKS-04-0.pddl  \
+    --out-domain new-domain.pddl --out-problem new-problem.pddl
+```
+
+Generate MTP domain and problem from a labeled domain and problem description:
+
+```shell
+$ python3 main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
+```
+
 
 ## Formats
 
@@ -205,7 +232,7 @@ Here disjunct goals via `oneof` may be labelled with names.
 
 The domain markers (`d3`,`d2`, and `d1` in this example), must appear ordered both in the domain and problem files, i.e., effects (and goals) of higher domain levels are written before effects (and goals) of lower domain levels in order to denote the domain hierarchy (e.g. `d3 > d2 > d1`).
 
-## Examples
+## Usage examples
 
 Parse a domain and planning problem and print them both on console:
 
