@@ -35,7 +35,7 @@ $ pip install ply
 
 ## Usage examples
 
-Parse a domain and planning problem and print them both on console:
+Parse a domain and planning problem and print them both on console (this test file contains rich nested constructs):
 
 ```shell
 $ python main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
