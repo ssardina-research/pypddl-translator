@@ -75,13 +75,9 @@ def test_change_problem(problem):
 
 
 if __name__ == '__main__':
-    usage = 'python3 main.py <domain> [<problem>]'
-    description = 'Parse a planning domain and problem. ' \
-                  '<domain> can store a planning domain or a planning domain and a problem. ' \
-                  '<problem> is optional and should contain a problem (when domain only includes the planning domain).' \
-                  'A problem can either be a standard planning problem or labeled planning problem (with labeled effects)'
-    parser = argparse.ArgumentParser(usage=usage, description=description)
-
+    # usage = 'python main.py <domain> [<problem>]'
+    description = 'Parse and translate a planning domain and problem. '
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument('domain-problem',
                         nargs = '+',
                         help='path to at least one file, possibly two, encoding the domain and problem')
