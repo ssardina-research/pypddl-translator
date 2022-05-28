@@ -33,25 +33,53 @@ Please make sure you have the [`ply` library](https://www.dabeaz.com/ply/) insta
 $ pip install ply
 ```
 
+We can install the system as an editable project `pypddl`:
+
+```
+$ pip install -e .  # install as editable project as per setup.py
+```
+
+Effectively this adds the folder to `sys.path` variable which is used by Python to search for modules. This means you can now use/run the planner from anywhere, as it is installed as a packge, and any change in the source of the planner will be seen automatically.
+
+We can then run the system from everyone via `-m pypddl.main` as follows:
+
+```shell
+python -m pypddl.main -h
+usage: main.py [-h] [--print-domain] [--print-problem] [--out-domain OUT_DOMAIN] [--out-problem OUT_PROBLEM]
+               [--test-changes] [--multi-tier-compilation]
+               domain-problem [domain-problem ...]
+
+Parse and translate a planning domain and problem.
+```
+
+To uninstall the system:  `pip uninstall pypddl`
+
+
 ## Usage examples
 
 Parse a domain and planning problem and print them both on console (this test file contains rich nested constructs):
 
 ```shell
-$ python src/main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
+$ python src/pypddl/main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
+```
+
+If the system was installed as an editable package (see above):
+
+```shell
+$ python -m pypddl.main pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
 ```
 
 Parse a domain and planning problem and save them into new files:
 
 ```shell
-$ python src/main.py pddl/blocksworld/domain.pddl pddl/blocksworld/problems/probBLOCKS-04-0.pddl  \
+$ python src/pypddl/main.py pddl/blocksworld/domain.pddl pddl/blocksworld/problems/probBLOCKS-04-0.pddl  \
     --out-domain new-domain.pddl --out-problem new-problem.pddl
 ```
 
 Generate MTP domain and problem from a labeled domain and problem description:
 
 ```shell
-$ python src/main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
+$ python src/pypddl/main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
 ```
 
 ### Unit testing
@@ -59,7 +87,7 @@ $ python src/main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/label
 Uses package [unittest](https://docs.python.org/3/library/unittest.html):
 
 ```shell
-$ python -m unittest src/pypddl/unit_tests.py
+$ python -m unittest src/pypddl/pypddl/unit_tests.py
 ```
 
 
