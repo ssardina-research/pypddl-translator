@@ -33,7 +33,7 @@ Please make sure you have the [`ply` library](https://www.dabeaz.com/ply/) insta
 $ pip install ply
 ```
 
-We can install the system as an editable project `pypddl`:
+We can install the system as an [editable project](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/#working-in-development-mode) `pypddl`:
 
 ```
 $ pip install -e .  # install as editable project as per setup.py
@@ -52,7 +52,25 @@ usage: main.py [-h] [--print-domain] [--print-problem] [--out-domain OUT_DOMAIN]
 Parse and translate a planning domain and problem.
 ```
 
+We can also check the package is installed:
+
+```shell
+$ pip show pypddl
+Name: pypddl
+Version: 1.5
+Summary: A parser and translator of PDDL files
+Home-page: https://github.com/ssardina-planning/pypddl-translator
+Author: Sebastian Sardina
+Author-email: ssardina@gmail.com
+License: UNKNOWN
+Location: /mnt/ssardina-research/nitinseb/pypddl-translator.git/src
+Requires: ply
+Required-by: 
+```
+
 To uninstall the system:  `pip uninstall pypddl`
+
+
 
 
 ## Usage examples
