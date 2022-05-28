@@ -1,13 +1,13 @@
 import argparse
 import copy
 
-from pddlparser import PDDLParser
+from pypddl.pddlparser import PDDLParser
 
-from predicate import Predicate
-from term      import Term
-from literal   import Literal
-from action    import Action
-from problem import Problem
+from pypddl.predicate import Predicate
+from pypddl.term      import Term
+from pypddl.literal   import Literal
+from pypddl.action    import Action
+from pypddl.problem import Problem
 
 def generate_explicability_formula(d_prime_domain, current_effects, all_effects, highest_domain, hierarchy):
     formula_result = []

@@ -15,8 +15,8 @@
 
 import itertools
 
-from predicate import Predicate
-from term import Term
+from pypddl.predicate import Predicate
+from pypddl.term import Term
 
 
 class Problem(object):

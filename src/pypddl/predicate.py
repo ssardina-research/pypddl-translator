@@ -14,7 +14,7 @@
 # along with pypddl-parser.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from term import Term
+from pypddl.term import Term
 
 
 class Predicate(object):

@@ -14,10 +14,10 @@
 # along with pypddl-parser.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from predicate import Predicate
-from term      import Term
-from literal   import Literal
-from action    import Action
+from pypddl.predicate import Predicate
+from pypddl.term      import Term
+from pypddl.literal   import Literal
+from pypddl.action    import Action
 
 
 class Domain(object):

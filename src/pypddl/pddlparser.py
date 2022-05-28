@@ -17,12 +17,12 @@
 from ply import lex
 from ply import yacc
 
-from term      import Term
-from literal   import Literal
-from predicate import Predicate
-from action    import Action
-from domain    import Domain
-from problem   import Problem
+from pypddl.term      import Term
+from pypddl.literal   import Literal
+from pypddl.predicate import Predicate
+from pypddl.action    import Action
+from pypddl.domain    import Domain
+from pypddl.problem   import Problem
 
 tokens = (
     'NAME',

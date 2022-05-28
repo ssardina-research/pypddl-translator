@@ -16,14 +16,14 @@
 import argparse
 import copy
 
-from pddlparser import PDDLParser
+from pypddl.pddlparser import PDDLParser
 
-from predicate import Predicate
-from term      import Term
-from literal   import Literal
-from action    import Action
-from problem import Problem
-from mtp import multi_tier_compilation_problem, multi_tier_compilation_domain
+from pypddl.predicate import Predicate
+from pypddl.term      import Term
+from pypddl.literal   import Literal
+from pypddl.action    import Action
+from pypddl.problem import Problem
+from pypddl.mtp import multi_tier_compilation_problem, multi_tier_compilation_domain
 
 
 
