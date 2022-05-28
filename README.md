@@ -38,20 +38,20 @@ $ pip install ply
 Parse a domain and planning problem and print them both on console (this test file contains rich nested constructs):
 
 ```shell
-$ python main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
+$ python src/main.py pddl/test/domain.pddl pddl/test/problems/probBLOCKS-04-0.pddl  --print-domain --print-problem
 ```
 
 Parse a domain and planning problem and save them into new files:
 
 ```shell
-$ python main.py pddl/blocksworld/domain.pddl pddl/blocksworld/problems/probBLOCKS-04-0.pddl  \
+$ python src/main.py pddl/blocksworld/domain.pddl pddl/blocksworld/problems/probBLOCKS-04-0.pddl  \
     --out-domain new-domain.pddl --out-problem new-problem.pddl
 ```
 
 Generate MTP domain and problem from a labeled domain and problem description:
 
 ```shell
-$ python main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
+$ python src/main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
 ```
 
 
