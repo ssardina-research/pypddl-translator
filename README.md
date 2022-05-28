@@ -54,6 +54,14 @@ Generate MTP domain and problem from a labeled domain and problem description:
 $ python src/main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-example/labeled-problem.pddl --multi-tier-compilation --out-problem mtp-problem.pddl --out-domain mtp-domain.pddl
 ```
 
+### Unit testing
+
+Uses package [unittest](https://docs.python.org/3/library/unittest.html):
+
+```shell
+$ python -m unittest src/pypddl/unit_tests.py
+```
+
 
 ## Formats
 
