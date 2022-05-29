@@ -512,10 +512,11 @@ def p_init_def(p):
 
 def p_goal_def(p):
     '''goal_def : LPAREN GOAL_KEY LPAREN AND_KEY literals_lst RPAREN RPAREN
+                | LPAREN GOAL_KEY LPAREN ONEOF_KEY oneof_effects_lst RPAREN RPAREN
                 | LPAREN GOAL_KEY literals_lst RPAREN'''
     if len(p) == 8:
         p[0] = p[5]
-    if len(p) == 5:
+    elif len(p) == 5:
         p[0] = p[3]
 
 

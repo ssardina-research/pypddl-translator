@@ -16,6 +16,8 @@
 import itertools
 
 from pypddl.predicate import Predicate
+from pypddl.literal import Literal
+
 from pypddl.term import Term
 
 
@@ -87,10 +89,14 @@ class Problem(object):
             else:
                 objects_txt = ' '.join(self._objects[None])
 
+        # extract goal
         goal_str = ''
-        if not isinstance(self.goal[0],tuple): #normal goal definition
+        print("=======================")
+        print(type(self.goal[0]))
+        print("=======================")
+        if isinstance(self.goal[0], Literal): # normal goal definition: list of pypddl.literal.Literal
             goal_str = '\n\t\t'.join(repr(pred) for pred in self.goal)
-        else: #labeled goal definition
+        else: # labeled oneof goal definition
             for g in self.goal:
                 goal_str += '(' + g[0] + ' (and ' + ' '.join(repr(pred[1]) for pred in g[1][0]) + '))\n\t\t'
 
