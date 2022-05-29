@@ -1,4 +1,8 @@
+from distutils.command import clean
 import unittest
+
+import re
+
 from pypddl.pddlparser import PDDLParser
 from pypddl.mtp import multi_tier_compilation_domain, multi_tier_compilation_problem
 from pypddl.problem import Problem
@@ -34,10 +38,44 @@ class TestMtpCompilation(unittest.TestCase):
 class TestPrint(unittest.TestCase):
 
     def test_print_domain_strips(self):
-        test_domain_string = '(define (domain blocks)\n\t(:requirements :strips :typing :equality)\n\t(:types \n\t\t\t\tblock block1 - superblock\n objects1 objects2\n\t)\n\t(:constants \n\t\ta b c - block\n\t)\n\t(:predicates\n\t\t(on ?x - block ?y - block)\n\t\t(ontable ?x - block)\n\t\t(clear ?x - block)\n\t\t(handempty)\n\t\t(holding ?x - block)\n\t)\n\t(:action pick-up \n\t\t:parameters (?x - block)\n\t\t:precondition (and  (clear ?x) (ontable ?x) (handempty))\n\t\t:effect (and (not (ontable ?x)) (not (clear ?x)) (not (handempty)) (holding ?x))\n\t)\n\t(:action put-down \n\t\t:parameters (?x - block)\n\t\t:precondition (and  (holding ?x))\n\t\t:effect (and (not (holding ?x)) (clear ?x) (handempty) (ontable ?x))\n\t)\n\t(:action stack \n\t\t:parameters (?x - block ?y - block)\n\t\t:precondition (and  (not (= ?x ?y)) (holding ?x) (clear ?y))\n\t\t:effect (and (not (holding ?x)) (not (clear ?y)) (clear ?x) (handempty) (on ?x ?y))\n\t)\n\t(:action unstack \n\t\t:parameters (?x - block ?y - block)\n\t\t:precondition (and  (not (= ?x ?y)) (on ?x ?y) (clear ?x) (handempty))\n\t\t:effect (and (holding ?x) (clear ?y) (not (clear ?x)) (not (handempty)) (not (on ?x ?y)))\n\t)\n)'
+        expected = """(define (domain blocks)
+            (:requirements :strips :typing :equality)
+            (:types 
+                block
+            )
+            (:predicates
+                (on ?x - block ?y - block)
+                (ontable ?x - block)
+                (clear ?x - block)
+                (handempty)
+                (holding ?x - block)
+            )
+            (:action pick-up 
+                :parameters (?x - block)
+                :precondition (and  (clear ?x) (ontable ?x) (handempty))
+                :effect (and (not (ontable ?x)) (not (clear ?x)) (not (handempty)) (holding ?x))
+            )
+            (:action put-down 
+                :parameters (?x - block)
+                :precondition (and  (holding ?x))
+                :effect (and (not (holding ?x)) (clear ?x) (handempty) (ontable ?x))
+            )
+            (:action stack 
+                :parameters (?x - block ?y - block)
+                :precondition (and  (not (= ?x ?y)) (holding ?x) (clear ?y))
+                :effect (and (not (holding ?x)) (not (clear ?y)) (clear ?x) (handempty) (on ?x ?y))
+            )
+            (:action unstack 
+                :parameters (?x - block ?y - block)
+                :precondition (and  (not (= ?x ?y)) (on ?x ?y) (clear ?x) (handempty))
+                :effect (and (holding ?x) (clear ?y) (not (clear ?x)) (not (handempty)) (not (on ?x ?y)))
+            )
+        )
+        """
         domain = PDDLParser.parse('pddl/blocksworld/domain.pddl')
+        
         new_domain_string = repr(domain)
-        self.assertEqual(test_domain_string,new_domain_string)
+        self.assertEqual(clean_up_str(expected), clean_up_str(new_domain_string))
 
     def test_print_problem_strips(self):
         test_problem_string = '(define (problem blocks-4-0)\n\t(:domain blocks)\n\t(:objects d b a c - block)\n\t(:init\n\t\t(clear c)\n\t\t(clear a)\n\t\t(clear b)\n\t\t(clear d)\n\t\t(ontable c)\n\t\t(ontable a)\n\t\t(ontable b)\n\t\t(ontable d)\n\t\t(handempty))\n\t(:goal (and \n\t\t(on d c)\n\t\t(on c b)\n\t\t(on b a)))\n)'
@@ -58,22 +96,253 @@ class TestPrint(unittest.TestCase):
         self.assertEqual(test_problem_string,new_problem_string)
 
     def test_print_domain_labeled(self):
-        test_domain_string = '(define (domain no_running_1)\n\t(:requirements :typing)\n\t(:types \n\t\t cell\n\t)\n\t(:constants \n\t\tc0 c1 c2 - cell\n\t)\n\t(:predicates\n\t\t(at ?c - cell)\n\t\t(adj ?o - cell ?d - cell)\n\t\t(broken)\n\t\t(scratch)\n\t)\n\t(:action walk \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)))\n\t\t:effect (oneof (d3 (and (not (at ?o)) (at ?d)))\n\t\t (d2 (and (not (at ?o)) (at ?d) (scratch)))\n\t\t (d1 (and (scratch)))\n\t\t)\n\t)\n\t(:action run \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)))\n\t\t:effect (oneof (d3 (and (not (at c2)) (at c0)))\n\t\t (d2 (and (not (at c2)) (at c0) (scratch)))\n\t\t (d1 (and (broken)))\n\t\t)\n\t)\n)'
+        expected = """(define (domain no_running_1)
+            (:requirements :typing)
+            (:types 
+                cell
+            )
+            (:constants 
+                c0 c1 c2 - cell
+            )
+            (:predicates
+                (at ?c - cell)
+                (adj ?o - cell ?d - cell)
+                (broken)
+                (scratch)
+            )
+            (:action walk 
+                :parameters (?o - cell ?d - cell)
+                :precondition (and  (at ?o) (adj ?o ?d) (not (broken)))
+                :effect (oneof (d3 (and (not (at ?o)) (at ?d))) (d2 (and (not (at ?o)) (at ?d) (scratch))) (d1 (scratch)))
+            )
+            (:action run 
+                :parameters ()
+                :precondition (and  (at c2) (not (broken)))
+                :effect (oneof (d3 (and (not (at c2)) (at c0))) (d2 (and (not (at c2)) (at c0) (scratch))) (d1 (broken)))
+            )
+            )
+        """
+        
         domain = PDDLParser.parse('pddl/mtp-example/labeled-domain.pddl')
         new_domain_string = repr(domain)
-        self.assertEqual(test_domain_string,new_domain_string)
+        
+        
+        self.assertEqual(clean_up_str(expected), clean_up_str(new_domain_string))
 
     def test_print_problem_labeled(self):
         test_problem_string = '(define (problem p1)\n\t(:domain no_running_1)\n\t(:init\n\t\t(at c2)\n\t\t(adj c2 c1)\n\t\t(adj c1 c0)\n\t\t(adj c0 c1)\n\t\t(adj c1 c2))\n\t(:goal (and \n\t\t(d3 (and (at c0) (not (scratch)) (not (broken))))\n\t\t(d2 (and (at c0) (not (broken))))\n\t\t(d1 (and (at c2) (not (broken))))\n\t\t))\n)'
         problem = PDDLParser.parse('pddl/mtp-example/labeled-problem.pddl')
         new_problem_string = repr(problem)
+        
         self.assertEqual(test_problem_string,new_problem_string)
 
     def test_print_domain_oneof_or(self):
-        test_domain_string = '(define (domain no_running_1)\n\t(:requirements :typing)\n\t(:types \n\t\t cell\n\t)\n\t(:constants \n\t\tc0 c1 c2 - cell\n\t)\n\t(:predicates\n\t\t(at ?c - cell)\n\t\t(adj ?o - cell ?d - cell)\n\t\t(broken)\n\t\t(scratch)\n\t\t(end)\n\t\t(act)\n\t\t(l_d3)\n\t\t(e_d3)\n\t\t(eff_d3_walk)\n\t\t(eff_d3_run)\n\t\t(l_d2)\n\t\t(e_d2)\n\t\t(eff_d2_walk)\n\t\t(eff_d2_run)\n\t\t(l_d1)\n\t\t(e_d1)\n\t\t(eff_d1_walk)\n\t\t(eff_d1_run)\n\t\t(u_walk)\n\t\t(u_run)\n\t)\n\t(:action continue_d3 \n\t\t:parameters ()\n\t\t:precondition (and  (not (act)) (l_d3) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)) (or (e_d3)))\n\t\t:effect (and (act) (not (e_d3)) (not (e_d2)) (not (e_d1)))\n\t)\n\t(:action continue_d2 \n\t\t:parameters ()\n\t\t:precondition (and  (not (act)) (l_d2) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)) (or (e_d3) (e_d2)))\n\t\t:effect (and (act) (not (e_d3)) (not (e_d2)) (not (e_d1)))\n\t)\n\t(:action continue_d1 \n\t\t:parameters ()\n\t\t:precondition (and  (not (act)) (l_d1) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)) (or (e_d3) (e_d2) (e_d1)))\n\t\t:effect (and (act) (not (e_d3)) (not (e_d2)) (not (e_d1)))\n\t)\n\t(:action degrade_d3_d2 \n\t\t:parameters ()\n\t\t:precondition (and  (not (act)) (l_d3) (e_d2) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)))\n\t\t:effect (and (act) (l_d2) (not (l_d3)) (not (e_d3)) (not (e_d2)) (not (e_d1)))\n\t)\n\t(:action degrade_d3_d1 \n\t\t:parameters ()\n\t\t:precondition (and  (not (act)) (l_d3) (e_d1) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)))\n\t\t:effect (and (act) (l_d1) (not (l_d3)) (not (e_d3)) (not (e_d2)) (not (e_d1)))\n\t)\n\t(:action degrade_d2_d1 \n\t\t:parameters ()\n\t\t:precondition (and  (not (act)) (l_d2) (e_d1) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)))\n\t\t:effect (and (act) (l_d1) (not (l_d2)) (not (e_d3)) (not (e_d2)) (not (e_d1)))\n\t)\n\t(:action walk_unfair_ \n\t\t:parameters ()\n\t\t:precondition (and  (act) (u_walk))\n\t\t:effect (oneof (and (eff_d3_walk) (not (act))) (and (eff_d2_walk) (not (act))) (and (eff_d1_walk) (not (act))))\n\t)\n\t(:action walk_d3 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (l_d3) (act) (not (u_walk)) (not (u_run)))\n\t\t:effect (oneof (and (not (at ?o)) (at ?d)) (u_walk))\n\t)\n\t(:action walk_d2 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (l_d2) (act) (not (u_walk)) (not (u_run)))\n\t\t:effect (oneof (and (not (at ?o)) (at ?d)) (and (not (at ?o)) (at ?d) (scratch)) (u_walk))\n\t)\n\t(:action walk_d1 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (l_d1) (act) (not (u_walk)) (not (u_run)))\n\t\t:effect (oneof (and (not (at ?o)) (at ?d)) (and (not (at ?o)) (at ?d) (scratch)) (scratch))\n\t)\n\t(:action walk_eff_d3_explained_by_d3 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (eff_d3_walk))\n\t\t:effect (and (not (at ?o)) (at ?d) (e_d3) (not (eff_d3_walk)) (not (act)) (not (u_walk)))\n\t)\n\t(:action walk_eff_d2_explained_by_d3 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (eff_d2_walk) (scratch))\n\t\t:effect (and (not (at ?o)) (at ?d) (scratch) (e_d3) (not (eff_d2_walk)) (not (act)) (not (u_walk)))\n\t)\n\t(:action walk_eff_d2_explained_by_d2 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (eff_d2_walk) (or (not (scratch))))\n\t\t:effect (and (not (at ?o)) (at ?d) (scratch) (e_d2) (not (eff_d2_walk)) (not (act)) (not (u_walk)))\n\t)\n\t(:action walk_eff_d1_explained_by_d3 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (eff_d1_walk) (scratch) (not (at ?o)) (at ?d))\n\t\t:effect (and (scratch) (e_d3) (not (eff_d1_walk)) (not (act)) (not (u_walk)))\n\t)\n\t(:action walk_eff_d1_explained_by_d2 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (eff_d1_walk) (not (at ?o)) (at ?d) (or (not (scratch)) (at ?o) (not (at ?d))))\n\t\t:effect (and (scratch) (e_d2) (not (eff_d1_walk)) (not (act)) (not (u_walk)))\n\t)\n\t(:action walk_eff_d1_explained_by_d1 \n\t\t:parameters (?o - cell ?d - cell)\n\t\t:precondition (and  (at ?o) (adj ?o ?d) (not (broken)) (eff_d1_walk) (or (not (scratch)) (at ?o) (not (at ?d))) (or (at ?o) (not (at ?d))))\n\t\t:effect (and (scratch) (e_d1) (not (eff_d1_walk)) (not (act)) (not (u_walk)))\n\t)\n\t(:action run_unfair_ \n\t\t:parameters ()\n\t\t:precondition (and  (act) (u_run))\n\t\t:effect (oneof (and (eff_d3_run) (not (act))) (and (eff_d2_run) (not (act))) (and (eff_d1_run) (not (act))))\n\t)\n\t(:action run_d3 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (l_d3) (act) (not (u_walk)) (not (u_run)))\n\t\t:effect (oneof (and (not (at c2)) (at c0)) (u_run))\n\t)\n\t(:action run_d2 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (l_d2) (act) (not (u_walk)) (not (u_run)))\n\t\t:effect (oneof (and (not (at c2)) (at c0)) (and (not (at c2)) (at c0) (scratch)) (u_run))\n\t)\n\t(:action run_d1 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (l_d1) (act) (not (u_walk)) (not (u_run)))\n\t\t:effect (oneof (and (not (at c2)) (at c0)) (and (not (at c2)) (at c0) (scratch)) (broken))\n\t)\n\t(:action run_eff_d3_explained_by_d3 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (eff_d3_run))\n\t\t:effect (and (not (at c2)) (at c0) (e_d3) (not (eff_d3_run)) (not (act)) (not (u_run)))\n\t)\n\t(:action run_eff_d2_explained_by_d3 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (eff_d2_run) (scratch))\n\t\t:effect (and (not (at c2)) (at c0) (scratch) (e_d3) (not (eff_d2_run)) (not (act)) (not (u_run)))\n\t)\n\t(:action run_eff_d2_explained_by_d2 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (eff_d2_run) (or (not (scratch))))\n\t\t:effect (and (not (at c2)) (at c0) (scratch) (e_d2) (not (eff_d2_run)) (not (act)) (not (u_run)))\n\t)\n\t(:action run_eff_d1_explained_by_d3 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (eff_d1_run) (broken) (not (at c2)) (at c0))\n\t\t:effect (and (broken) (e_d3) (not (eff_d1_run)) (not (act)) (not (u_run)))\n\t)\n\t(:action run_eff_d1_explained_by_d2 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (eff_d1_run) (broken) (not (at c2)) (at c0) (scratch) (or (not (broken)) (at c2) (not (at c0))))\n\t\t:effect (and (broken) (e_d2) (not (eff_d1_run)) (not (act)) (not (u_run)))\n\t)\n\t(:action run_eff_d1_explained_by_d1 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (not (broken)) (eff_d1_run) (or (not (broken)) (at c2) (not (at c0))) (or (not (broken)) (at c2) (not (at c0)) (not (scratch))))\n\t\t:effect (and (broken) (e_d1) (not (eff_d1_run)) (not (act)) (not (u_run)))\n\t)\n\t(:action check_goal_d3 \n\t\t:parameters ()\n\t\t:precondition (and  (at c0) (not (scratch)) (not (broken)) (l_d3) (act))\n\t\t:effect (end)\n\t)\n\t(:action check_goal_d2 \n\t\t:parameters ()\n\t\t:precondition (and  (at c0) (not (broken)) (l_d2) (act))\n\t\t:effect (end)\n\t)\n\t(:action check_goal_d1 \n\t\t:parameters ()\n\t\t:precondition (and  (at c2) (l_d1) (act))\n\t\t:effect (end)\n\t)\n)'
+        expected = '''(define (domain no_running_1)
+            (:requirements :typing)
+            (:types
+                cell
+            )
+            (:constants
+                c0 c1 c2 - cell
+            )
+            (:predicates
+                (at ?c - cell)
+                (adj ?o - cell ?d - cell)
+                (broken)
+                (scratch)
+                (end)
+                (act)
+                (l_d3)
+                (e_d3)
+                (eff_d3_walk)
+                (eff_d3_run)
+                (l_d2)
+                (e_d2)
+                (eff_d2_walk)
+                (eff_d2_run)
+                (l_d1)
+                (e_d1)
+                (eff_d1_walk)
+                (eff_d1_run)
+                (u_walk)
+                (u_run)
+            )
+            (:action continue_d3
+                :parameters ()
+                :precondition (and (not (act)) (l_d3) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)) (or (e_d3)))
+                :effect (and (act) (not (e_d3)) (not (e_d2)) (not (e_d1)))
+            )
+            (:action continue_d2
+                :parameters ()
+                :precondition (and (not (act)) (l_d2) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)) (or (e_d3) (e_d2)))
+                :effect (and (act) (not (e_d3)) (not (e_d2)) (not (e_d1)))
+            )
+            (:action continue_d1
+                :parameters ()
+                :precondition (and (not (act)) (l_d1) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)) (or (e_d3) (e_d2) (e_d1)))
+                :effect (and (act) (not (e_d3)) (not (e_d2)) (not (e_d1)))
+            )
+            (:action degrade_d3_d2
+                :parameters ()
+                :precondition (and (not (act)) (l_d3) (e_d2) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)))
+                :effect (and (act) (l_d2) (not (l_d3)) (not (e_d3)) (not (e_d2)) (not (e_d1)))
+            )
+            (:action degrade_d3_d1
+                :parameters ()
+                :precondition (and (not (act)) (l_d3) (e_d1) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)))
+                :effect (and (act) (l_d1) (not (l_d3)) (not (e_d3)) (not (e_d2)) (not (e_d1)))
+            )
+            (:action degrade_d2_d1
+                :parameters ()
+                :precondition (and (not (act)) (l_d2) (e_d1) (not (eff_d3_walk)) (not (eff_d3_run)) (not (eff_d2_walk)) (not (eff_d2_run)) (not (eff_d1_walk)) (not (eff_d1_run)))
+                :effect (and (act) (l_d1) (not (l_d2)) (not (e_d3)) (not (e_d2)) (not (e_d1)))
+            )
+            (:action walk_unfair_
+                :parameters ()
+                :precondition (and (act) (u_walk))
+                :effect (oneof
+                    (and (eff_d3_walk) (not (act)))
+                    (and (eff_d2_walk) (not (act)))
+                    (and (eff_d1_walk) (not (act))))
+            )
+            (:action walk_d3
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (l_d3) (act) (not (u_walk)) (not (u_run)))
+                :effect (oneof
+                    (and (not (at ?o)) (at ?d))
+                    (u_walk))
+            )
+            (:action walk_d2
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (l_d2) (act) (not (u_walk)) (not (u_run)))
+                :effect (oneof
+                    (and (not (at ?o)) (at ?d))
+                    (and (not (at ?o)) (at ?d) (scratch))
+                    (u_walk))
+            )
+            (:action walk_d1
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (l_d1) (act) (not (u_walk)) (not (u_run)))
+                :effect (oneof
+                    (and (not (at ?o)) (at ?d))
+                    (and (not (at ?o)) (at ?d) (scratch))
+                    (scratch))
+            )
+            (:action walk_eff_d3_explained_by_d3
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (eff_d3_walk))
+                :effect (and (not (at ?o)) (at ?d) (e_d3) (not (eff_d3_walk)) (not (act)) (not (u_walk)))
+            )
+            (:action walk_eff_d2_explained_by_d3
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (eff_d2_walk) (scratch))
+                :effect (and (not (at ?o)) (at ?d) (scratch) (e_d3) (not (eff_d2_walk)) (not (act)) (not (u_walk)))
+            )
+            (:action walk_eff_d2_explained_by_d2
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (eff_d2_walk) (or (not (scratch))))
+                :effect (and (not (at ?o)) (at ?d) (scratch) (e_d2) (not (eff_d2_walk)) (not (act)) (not (u_walk)))
+            )
+            (:action walk_eff_d1_explained_by_d3
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (eff_d1_walk) (scratch) (not (at ?o)) (at ?d))
+                :effect (and (scratch) (e_d3) (not (eff_d1_walk)) (not (act)) (not (u_walk)))
+            )
+            (:action walk_eff_d1_explained_by_d2
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (eff_d1_walk) (not (at ?o)) (at ?d) (or (not (scratch)) (at ?o) (not (at ?d))))
+                :effect (and (scratch) (e_d2) (not (eff_d1_walk)) (not (act)) (not (u_walk)))
+            )
+            (:action walk_eff_d1_explained_by_d1
+                :parameters (?o - cell ?d - cell)
+                :precondition (and (at ?o) (adj ?o ?d) (not (broken)) (eff_d1_walk) (or (not (scratch)) (at ?o) (not (at ?d))) (or (at ?o) (not (at ?d))))
+                :effect (and (scratch) (e_d1) (not (eff_d1_walk)) (not (act)) (not (u_walk)))
+            )
+            (:action run_unfair_
+                :parameters ()
+                :precondition (and (act) (u_run))
+                :effect (oneof
+                    (and (eff_d3_run) (not (act)))
+                    (and (eff_d2_run) (not (act)))
+                    (and (eff_d1_run) (not (act))))
+            )
+            (:action run_d3
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (l_d3) (act) (not (u_walk)) (not (u_run)))
+                :effect (oneof
+                    (and (not (at c2)) (at c0))
+                    (u_run))
+            )
+            (:action run_d2
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (l_d2) (act) (not (u_walk)) (not (u_run)))
+                :effect (oneof
+                    (and (not (at c2)) (at c0))
+                    (and (not (at c2)) (at c0) (scratch))
+                    (u_run))
+            )
+            (:action run_d1
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (l_d1) (act) (not (u_walk)) (not (u_run)))
+                :effect (oneof
+                    (and (not (at c2)) (at c0))
+                    (and (not (at c2)) (at c0) (scratch))
+                    (broken))
+            )
+            (:action run_eff_d3_explained_by_d3
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (eff_d3_run))
+                :effect (and (not (at c2)) (at c0) (e_d3) (not (eff_d3_run)) (not (act)) (not (u_run)))
+            )
+            (:action run_eff_d2_explained_by_d3
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (eff_d2_run) (scratch))
+                :effect (and (not (at c2)) (at c0) (scratch) (e_d3) (not (eff_d2_run)) (not (act)) (not (u_run)))
+            )
+            (:action run_eff_d2_explained_by_d2
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (eff_d2_run) (or (not (scratch))))
+                :effect (and (not (at c2)) (at c0) (scratch) (e_d2) (not (eff_d2_run)) (not (act)) (not (u_run)))
+            )
+            (:action run_eff_d1_explained_by_d3
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (eff_d1_run) (broken) (not (at c2)) (at c0))
+                :effect (and (broken) (e_d3) (not (eff_d1_run)) (not (act)) (not (u_run)))
+            )
+            (:action run_eff_d1_explained_by_d2
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (eff_d1_run) (broken) (not (at c2)) (at c0) (scratch) (or (not (broken)) (at c2) (not (at c0))))
+                :effect (and (broken) (e_d2) (not (eff_d1_run)) (not (act)) (not (u_run)))
+            )
+            (:action run_eff_d1_explained_by_d1
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (eff_d1_run) (or (not (broken)) (at c2) (not (at c0))) (or (not (broken)) (at c2) (not (at c0)) (not (scratch))))
+                :effect (and (broken) (e_d1) (not (eff_d1_run)) (not (act)) (not (u_run)))
+            )
+            (:action check_goal_d3
+                :parameters ()
+                :precondition (and (at c0) (not (scratch)) (not (broken)) (l_d3) (act))
+                :effect (end)
+            )
+            (:action check_goal_d2
+                :parameters ()
+                :precondition (and (at c0) (not (broken)) (l_d2) (act))
+                :effect (end)
+            )
+            (:action check_goal_d1
+                :parameters ()
+                :precondition (and (at c2) (not (broken)) (l_d1) (act))
+                :effect (end)
+            )
+        )
+        '''
+   
         domain = PDDLParser.parse('pddl/mtp-example/mtp-domain.pddl')
         new_domain_string = repr(domain)
-        self.assertEqual(test_domain_string,new_domain_string)
+        
+        expected = clean_up_str(expected)
+        new_domain_string = clean_up_str(new_domain_string) 
+        self.assertEqual(expected,new_domain_string)
 
     def test_print_domain_conditional_effects(self):
         test_domain_string = '(define (domain ce)\n\t(:requirements :strips :typing :equality)\n\t(:predicates\n\t\t(p)\n\t\t(q)\n\t\t(r)\n\t\t(s)\n\t)\n\t(:action ce1 \n\t\t:parameters ()\n\t\t:precondition (and  (p))\n\t\t:effect (and (not (p)) (when (and (q))(and (s)))\n\t)\n)'
@@ -81,7 +350,14 @@ class TestPrint(unittest.TestCase):
         new_domain_string = repr(domain)
         self.assertEqual(test_domain_string,new_domain_string)
 
-
+def clean_up_str(string):
+    string = string.strip()
+    string = re.sub(r"^\s+","", string) 
+    string = re.sub(r"\s*\n\s+","\n", string) 
+    string = re.sub(r"\t","", string) 
+    string = re.sub(r"\s+"," ", string) 
+    
+    return string
 
 if __name__ == '__main__':
     unittest.main()
