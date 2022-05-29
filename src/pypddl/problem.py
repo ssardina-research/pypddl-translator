@@ -90,17 +90,22 @@ class Problem(object):
                 objects_txt = ' '.join(self._objects[None])
 
         # extract goal
-        goal_str = ''
-        print("=======================")
-        print(type(self.goal[0]))
-        print("=======================")
+        goal_str = ""
+        # print("============================")
+        # print(self.goal)
+        # print("============================")
+        
         if isinstance(self.goal[0], Literal): # normal goal definition: list of pypddl.literal.Literal
             goal_str = '\n\t\t'.join(repr(pred) for pred in self.goal)
-        else: # labeled oneof goal definition
+        else: # must be a list of tuples ("label", label name, lists lists of literal effects] - MTP problems with goals per level
             for g in self.goal:
-                goal_str += '(' + g[0] + ' (and ' + ' '.join(repr(pred[1]) for pred in g[1][0]) + '))\n\t\t'
-
-
+                if isinstance(g, tuple) and g[0] == 'label': 
+                    label = g[1]
+                    atomic_effects = g[2]   # must be a list of atomic effects (prob, literal)                    
+                    goal_str += f"({label} (and {' '.join(repr(pred[1]) for pred in atomic_effects)}))\n\t\t"
+                else:
+                    print(f"Something is wrong with the :goal, expected labelled goals: {g}")
+                    exit(1)
 
         pddl_str = '(define (problem {problem_name})\n' \
                    '\t(:domain {domain})\n' \
