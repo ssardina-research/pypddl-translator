@@ -16,6 +16,7 @@ def generate_explicability_formula(d_prime_domain, current_effects, all_effects,
     # First part of the conjunction
     # Make sure that the higher (or equal) level d_prime explain the effects
     other_effects = all_effects[highest_domain.index(d_prime_domain)]
+    # print(current_effects)
     explicability = effect_explicability(current_effects, other_effects)
     if len(explicability) > 0:
         positive.append(explicability)
@@ -49,8 +50,12 @@ def generate_explicability_formula(d_prime_domain, current_effects, all_effects,
 
 
 def effect_explicability(eff1, eff2):
-    differences = extract_differences(eff1[0], eff2[0], [])
-    differences = extract_differences(eff2[0], eff1[0], differences)
+    # print("**************")
+    # print(eff1)
+    # print(eff2)
+    # print("================")
+    differences = extract_differences(eff1, eff2, [])
+    differences = extract_differences(eff2, eff1, differences)
 
     return differences
 
@@ -254,12 +259,14 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
         # First of all we have to check the number of different effects that can appear with this action
         different_effects = []  # effects i
         higher_domain_effects = []  # higher domain where effect i appears
-        for domain_effects in action.effects:
-            dom = domain_effects[0]
-            effects = domain_effects[1]
+
+        for domain_effects in action.effects[0][1]:    # actions.effects = ("oneof", [<list of labeled effects>])
+            # domain_effects = ("label", <level string>, [list of atomic effects])
+            level = domain_effects[1]   # extract the 
+            effects = domain_effects[2]
             if effects not in different_effects:
                 different_effects.append(effects)
-                higher_domain_effects.append(dom)
+                higher_domain_effects.append(level)
 
         # *UNFAIR ACTION* that contemplates all the possible effects
         # We compile away the conditional effects by replacing them with eff_Dx_action predicates
@@ -340,7 +347,8 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
                     for x in aux:
                         precond += [x]
                     eff = []
-                    for effec in list(action.effects[hierarchy.index(d)][1][0]):
+                    # action.effects = [('oneof', [('label', 'd3', [(1.0, (not (at ?o))), (1.0, (at ?d))]), ('label', 'd2', [(1.0, (not (at ?o))), (1.0, (at ?d)), (1.0, (scratch))]), ('label', 'd1', [(1.0, (scratch))])])]
+                    for effec in list(action.effects[0][1][hierarchy.index(d)][2]):
                         eff.append(effec)
                     #eff = list(action.effects[hierarchy.index(d)][1])
                     eff += ([(1.0, Literal(Predicate('e_' + d_prime, []), True))])
@@ -352,9 +360,10 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
 
     # For each goal statement in the problem, we will have a *CHECK_GOAL* action that checks that a given goal
     # is achieved when being at a certain domain level
+    # goal_statement = [('label', 'd3', [(1.0, (at c0)), (1.0, (not (scratch))), (1.0, (not (broken)))]), ('label', 'd2', [(1.0, (at c0)), (1.0, (not (broken)))]), ('label', 'd1', [(1.0, (at c2)), (1.0, (not (broken)))])]
     for goal in goal_statement:
-        domain_level = goal[0]
-        goal_predicates = goal[1]
+        domain_level = goal[1]
+        goal_predicates = goal[2]
         # The preconditions will be formed by the goal statement and the proper level
         new_preconditions = []
         or_statement = False
@@ -363,6 +372,7 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
             if isinstance(p, tuple):
                 new_preconditions += [p[1]]
             # Otherwise, we have to create as many check_goal actions as parts of the or
+            # TODOL: this may be broken! (May 2022)
             else:
                 new_preconditions = []
                 or_statement = True
@@ -400,8 +410,8 @@ def multi_tier_compilation_problem(problem, mtp_problem_file):
     #   - This relationship is ordered in the problem file
     #   - Lattice structures are denoted by '_'
     domains = []
-    for d in problem.goal:
-        domain = d[0]
+    for d in problem.goal:  # problem.goal shold be a list of labelled goals
+        domain = d[1]   # get the label
         domains.append(domain)
 
     # Update the initial state
