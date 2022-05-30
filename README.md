@@ -15,15 +15,16 @@ This is an significant extension and refactoring of [pypddl-parser](https://gith
 
 **Planning domains:**
 
-* Supports the ```:requirements :strips, :typing, :equality, :probabilistic-effects```.
-* Supports non-deterministic effects via `oneof` keyword on 1ND normal form (i.e., actions have one single `oneof`, no nesting).
-* Supports relations between types:  `(:types type1 type2 ... typen - type ...)`
-* Supports conditional effects via `when` keyword.
+* Supports ```:requirements :strips, :typing, :equality, :probabilistic-effects```.
+* Relations between types:  `(:types type1 type2 ... typen - type ...)`
+* Non-deterministic effects via `oneof`.
+* Conditional effects via `when` keyword.
+* Labelled effects (used in MTP to label oneof).
 
 **Problems:**
 
 * Planning problems, via keyword  `problem`.
-* Labeled domains (labeled effects) for multi-tier planning problems (MTP).
+* Labeled oneof goals (used in MTP).
 
 ## Setup
 
@@ -105,7 +106,7 @@ $ python src/pypddl/main.py pddl/mtp-example/labeled-domain.pddl pddl/mtp-exampl
 Uses package [unittest](https://docs.python.org/3/library/unittest.html):
 
 ```shell
-$ python -m unittest src/pypddl/pypddl/unit_tests.py
+$ python -m unittest src/pypddl/unit_tests.py
 ```
 
 
@@ -154,18 +155,22 @@ $ python -m unittest src/pypddl/pypddl/unit_tests.py
 
 ```
 (define (problem test)
-(:domain blocksworld)
-(:objects b1 b2 )
-(:init
-    (arm-empty)
-    (on b1 b2)
-    (on-table b2)
-    (clear b1)
-    (ftrue)
-)
-(:goal (and (clear b1) (clear b2) ) )
+    (:domain blocksworld)
+    (:objects b1 b2 )
+    (:init
+        (arm-empty)
+        (on b1 b2)
+        (on-table b2)
+        (clear b1)
+        (ftrue)
+    )
+    (:goal (and (clear b1) (clear b2) ) )
+    ; (:goal (clear b1) (clear b2) ) ; also legal
 )
 ```
+
+The goal can also not mention the `and` and just list the literals.
+
 
 ### Labeled Planning Domains
 
