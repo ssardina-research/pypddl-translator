@@ -260,7 +260,8 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
         different_effects = []  # effects i
         higher_domain_effects = []  # higher domain where effect i appears
 
-        for domain_effects in action.effects[0][1]:    # actions.effects = ("oneof", [<list of labeled effects>])
+        # actions.effects = ("oneof", [<list of labeled effects>])
+        for domain_effects in action.effects[0][1]:    
             # domain_effects = ("label", <level string>, [list of atomic effects])
             level = domain_effects[1]   # extract the 
             effects = domain_effects[2]
@@ -286,9 +287,9 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
                           [(1.0, Literal(Predicate('act', []), False))]
             final_effects.append(new_effects)
         domain.add_action(action.name + '_unfair_', [], new_preconditions,
-                          final_effects)
+                          ("oneof", final_effects))
 
-        # For each action in the domain, and each domain level, we have an *ACTION_LEVEL_FAIR* action.
+        # For each action in the domain, and each domain level, we have an *ACTION_LEVEL* fair action.
         # It represents the set of fair effects from a given domain level
         current_levels = []
         for lev in hierarchy:
@@ -310,15 +311,16 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
             # 2. Subset of all the oneof effects, depending on the level we are in
             # 3. Unfair predicate for the lower levels
             new_effects = []
-            for domain_l in action.effects:
-                level = domain_l[0]
+
+            # action.effects = [('oneof', [('label', 'd3', [(1.0, (not (at c2))), (1.0, (at c0))]), ('label', 'd2', [(1.0, (not (at c2))), (1.0, (at c0)), (1.0, (scratch))]), ('label', 'd1', [(1.0, (broken))])])]
+            for domain_l in action.effects[0][1]:
+                level = domain_l[1] # e.g., d3
                 effects = []
                 if level in current_levels:
-                    for h in domain_l[1]:
-                        for x in h:
-                            if isinstance(x, tuple):
-                                effects.append(x)
-                        new_effects += [effects]
+                    for x in domain_l[2]:
+                        if isinstance(x, tuple):
+                            effects.append(x)
+                    new_effects += [effects]
                 else:
                     # Unfair part of the action
                     effects = [(1.0, Literal(Predicate('u_' + action.name, []), True))]
@@ -327,7 +329,7 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
 
             # We add the action without conditional effects
             domain.add_action(action.name + '_' + lev, action.params,
-                              new_preconditions, new_effects)
+                              new_preconditions, ("oneof", new_effects))
 
         # This part creates the actions that make the system only degrade when *really* needed
         # As a result of the compilation of conditional effects
