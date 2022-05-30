@@ -410,11 +410,8 @@ def multi_tier_compilation_problem(problem, mtp_problem_file):
     problem.init.append(Predicate('l_' + (str(domains[0]))))
 
     # Update the goal
-    print(problem.goal)
     original_goal = list(problem.goal)
     problem.goal = [Literal(Predicate('end'))]  # new goal condition
-
-    print(problem.goal)
 
     # Write the problem
     with open(mtp_problem_file, 'w') as f:
