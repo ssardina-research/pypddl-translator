@@ -393,7 +393,7 @@ def multi_tier_compilation_domain(domain, hierarchy, goal_statement, mtp_domain_
 
 
 # Compilation of the problem
-def multi_tier_compilation_problem(problem,mtp_problem_file):
+def multi_tier_compilation_problem(problem, mtp_problem_file):
     # Get the list/hierarchy of domains
     # Here we assume:
     #   - Each domain has an associated goal
@@ -406,11 +406,15 @@ def multi_tier_compilation_problem(problem,mtp_problem_file):
 
     # Update the initial state
     problem.init.append(Predicate('act'))  # act predicate
-    problem.init.append(Predicate('l_' + (str(domains[0]))))  # initial domain level (top model in the hierarchy)
+    # initial domain level (top model in the hierarchy)
+    problem.init.append(Predicate('l_' + (str(domains[0]))))
 
     # Update the goal
+    print(problem.goal)
     original_goal = list(problem.goal)
-    problem.goal = [Predicate('end')]  # new goal condition
+    problem.goal = [Literal(Predicate('end'))]  # new goal condition
+
+    print(problem.goal)
 
     # Write the problem
     with open(mtp_problem_file, 'w') as f:
@@ -418,4 +422,3 @@ def multi_tier_compilation_problem(problem,mtp_problem_file):
 
     # Return the list/hierarchy of domain models
     return domains, original_goal
-

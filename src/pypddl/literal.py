@@ -16,7 +16,7 @@
 
 class Literal(object):
 
-    def __init__(self, predicate, positive):
+    def __init__(self, predicate, positive=True):
         self._predicate = predicate
         self._positive  = positive
 
@@ -69,6 +69,6 @@ class Literal(object):
 
     def __hash__(self):
         #print(hash(str(self)))
-        return hash((self.predicate,self.is_positive()))
+        return hash((self.predicate, self.is_positive()))
 
 

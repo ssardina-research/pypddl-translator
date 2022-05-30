@@ -7,7 +7,7 @@
 		(adj c0 c1)
 		(adj c1 c2)
 		(act)
-		(l_d3))
+		(l_label))
 	(:goal (and 
 		(end)))
 )
