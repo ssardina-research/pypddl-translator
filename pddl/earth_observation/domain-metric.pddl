@@ -28,6 +28,7 @@
         ) 
      :effect 
         (and 
+            (increase (total-cost) 1)
             (not (is-focal-point ?p))
             (is-focal-point ?n)
         )
