@@ -204,12 +204,13 @@ def p_constants_def(p):
 
 # Used for processing :types and :constants
 #   list of names, possibly typed using hyphen -
+# Uses a dictionary type : list of names
 def p_typed_names_lst(p):
     '''typed_names_lst : names_lst HYPHEN type typed_names_lst
                        | names_lst HYPHEN type
                        | names_lst'''
     if len(p) == 2:
-        p[0] = dict({ '' : p[1]})
+        p[0] = dict({ '' : p[1]})   # non typed names
     elif len(p) == 4:
         p[0] = dict({p[3] : p[1]})
     elif len(p) == 5:
@@ -387,6 +388,33 @@ def p_literal(p):
         p[0] = Literal.negative(p[3])
 
 
+def p_predicate(p):
+    '''predicate : LPAREN NAME RPAREN
+                 | LPAREN NAME variables_or_constants_lst RPAREN
+                 | LPAREN NAME variables_lst RPAREN
+                 | LPAREN NAME constants_lst RPAREN
+                 | LPAREN EQUALS VARIABLE VARIABLE RPAREN'''
+    if len(p) == 4:
+        p[0] = Predicate(p[2])
+    elif len(p) == 5:
+        p[0] = Predicate(p[2], p[3])
+    elif len(p) == 6:
+        p[0] = Predicate('=', [p[3], p[4]])
+
+def p_variables_or_constants_lst(p):
+    '''variables_or_constants_lst : variable variables_or_constants_lst
+                                | constant variables_or_constants_lst
+                                | variable
+                                | constant
+                                '''
+    if len(p) == 2:
+        p[0] = [ Term.variable(p[1]) ]
+    elif len(p) == 3:
+        p[0] = [ Term.variable(p[1]) ] + p[2]
+
+
+
+# not used
 def p_ground_predicates_lst(p):
     '''ground_predicates_lst : ground_predicate ground_predicates_lst
                              | ground_predicate'''
@@ -395,20 +423,7 @@ def p_ground_predicates_lst(p):
     elif len(p) == 3:
         p[0] = [p[1]] + p[2]
 
-
-def p_predicate(p):
-    '''predicate : LPAREN NAME variables_lst RPAREN
-                 | LPAREN EQUALS VARIABLE VARIABLE RPAREN
-                 | LPAREN NAME RPAREN
-                 | LPAREN NAME constants_lst RPAREN'''
-    if len(p) == 4:
-        p[0] = Predicate(p[2])
-    elif len(p) == 5:
-        p[0] = Predicate(p[2], p[3])
-    elif len(p) == 6:
-        p[0] = Predicate('=', [p[3], p[4]])
-
-
+# not used
 def p_ground_predicate(p):
     '''ground_predicate : LPAREN NAME constants_lst RPAREN
                         | LPAREN NAME RPAREN'''
@@ -421,36 +436,39 @@ def p_ground_predicate(p):
 def p_typed_constants_lst(p):
     '''typed_constants_lst : constants_lst HYPHEN type typed_constants_lst
                            | constants_lst HYPHEN type'''
-    if len(p) == 4:
-        p[0] = [ Term.constant(value, p[3]) for value in p[1] ]
-    elif len(p) == 5:
-        p[0] = [ Term.constant(value, p[3]) for value in p[1] ] + p[4]
+    p[0] = p[1]
+    for const in p[0]:    # set the type of each var in the list
+            const.type = p[3]
+    if len(p) == 5:
+        p[0] = p[0] + p[4]
 
 
 def p_typed_variables_lst(p):
     '''typed_variables_lst : variables_lst HYPHEN type typed_variables_lst
                            | variables_lst HYPHEN type'''
-    if len(p) == 4:
-        p[0] = [ Term.variable(name, p[3]) for name in p[1] ]
-    elif len(p) == 5:
-        p[0] = [ Term.variable(name, p[3]) for name in p[1] ] + p[4]
+    p[0] = p[1]
+    for var in p[0]:    # set the type of each var in the list
+            var.type = p[3]
+    if len(p) == 5:
+        p[0] = p[0] + p[4]
 
 
 def p_constants_lst(p):
     '''constants_lst : constant constants_lst
                      | constant'''
     if len(p) == 2:
-        p[0] = [ Term.constant(p[1]) ]
+        p[0] = [ p[1] ]
     elif len(p) == 3:
-        p[0] = [ Term.constant(p[1]) ] + p[2]
+        p[0] = [ p[1] ] + p[2]
+
 
 def p_variables_lst(p):
     '''variables_lst : variable variables_lst
                      | variable'''
     if len(p) == 2:
-        p[0] = [ Term.variable(p[1]) ]
+        p[0] = [ p[1] ]
     elif len(p) == 3:
-        p[0] = [ Term.variable(p[1]) ] + p[2]
+        p[0] = [ p[1] ] + p[2]
 
 def p_names_lst(p):
     '''names_lst : NAME names_lst
@@ -470,11 +488,11 @@ def p_type(p):
 
 def p_constant(p):
     '''constant : NAME'''
-    p[0] = p[1]
+    p[0] = Term.constant(p[1])
 
 def p_variable(p):
     '''variable : VARIABLE'''
-    p[0] = p[1]
+    p[0] = Term.variable(p[1])
 
 
 ###################################################3

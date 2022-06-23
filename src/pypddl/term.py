@@ -22,17 +22,26 @@ class Term(object):
 
             for variables ?x name is '?x'
             for typed variables like ?x - block, name is '?x' and type is 'block'
-            for constants like 'e' in '(open e)', name and type are None and value is 'e'
+            constants like 'east' do not have ? in their name
 
 
         :param kwargs: up to three kwarg arguments that are all strings:
             name = the name of the term if variable (for example '?x' or 'table')
             type = the type of the term (for example 'blocks')
-            value = the value of the term if constant
+            var  = is this a variable? (otherwise it is a constant)
         """
-        self._name  = kwargs.get('name',  None)
-        self._type  = kwargs.get('type',  None)
-        self._value = kwargs.get('value', None)
+        self._name  = kwargs.get('name')    # name of the term (includes ? for vars)
+        self._type  = kwargs.get('type',  None) # subtype of term
+        self._variable = kwargs.get('var', True)    # is it a var or a constat?
+        self._constant = True if not self._variable else False
+
+    @classmethod
+    def variable(cls, name, type=None):
+        return Term(name=name, type=type, var=True)
+
+    @classmethod
+    def constant(cls, name, type=None):
+        return Term(name=name, type=type, var=False)
 
     @property
     def name(self):
@@ -42,36 +51,30 @@ class Term(object):
     def type(self):
         return self._type
 
-    @property
-    def value(self):
-        return self._value
-
     def is_variable(self):
-        return self._name is not None
+        return self._variable
 
     def is_typed(self):
         return self._type is not None
 
     def is_constant(self):
-        return self._value is not None
+        return self._constant
 
-    @classmethod
-    def variable(cls, name, type=None):
-        return Term(name=name, type=type)
+    @type.setter
+    def type(self, type):
+        self._type = type
 
-    @classmethod
-    def constant(cls, value, type=None):
-        return Term(value=value, type=type)
 
+    
     def __str__(self):
         if self.is_variable() and self.is_typed():
             return '{0} - {1}'.format(self._name, self._type)
         if self.is_variable():
             return '{0}'.format(self._name)
         if self.is_constant() and self.is_typed():
-            return '{0} - {1}'.format(self._value, self._type)
+            return '{0} - {1}'.format(self._name, self._type)
         if self.is_constant():
-            return '{0}'.format(self._value)
+            return '{0}'.format(self._name)
 
     def __repr__(self):
         if self.is_variable() and self.is_typed():
@@ -79,9 +82,9 @@ class Term(object):
         if self.is_variable():
             return '{0}'.format(self._name)
         if self.is_constant() and self.is_typed():
-            return '{0} - {1}'.format(self._value, self._type)
+            return '{0} - {1}'.format(self._name, self._type)
         if self.is_constant():
-            return '{0}'.format(self._value)
+            return '{0}'.format(self._name)
 
     def __eq__(self, other):
         if self._name == other._name and self._type == other._type:
