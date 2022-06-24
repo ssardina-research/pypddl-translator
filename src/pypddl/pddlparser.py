@@ -93,6 +93,7 @@ reserved = {
     ':precondition'             : 'PRECONDITION_KEY',
     ':effect'                   : 'EFFECT_KEY',
     'and'                       : 'AND_KEY',
+    'forall'                    : 'FORALL_KEY',
     'not'                       : 'NOT_KEY',
     'oneof'                     : 'ONEOF_KEY',
     'when'                      : 'WHEN_KEY',
