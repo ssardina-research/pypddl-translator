@@ -150,29 +150,58 @@ def p_pddl(p):
 ###################################################3
 # Rules for PLANNING DOMAIN
 ###################################################3
+
 def p_domain(p):
-    '''domain : LPAREN DEFINE_KEY domain_def require_def types_def constants_def predicates_def action_def_lst RPAREN
-              | LPAREN DEFINE_KEY domain_def require_def types_def predicates_def action_def_lst RPAREN
-              | LPAREN DEFINE_KEY domain_def require_def constants_def predicates_def action_def_lst RPAREN
-              | LPAREN DEFINE_KEY domain_def require_def predicates_def action_def_lst RPAREN'''
-    if len(p) == 10:    # both types and constants are given
-        p[0] = Domain(p[3], p[4], p[5][1], p[6][1], p[7], p[8])   # both :types and :constants
-    elif len(p) == 9:
-        if p[5][0] == "types":
-            p[0] = Domain(p[3], p[4], p[5][1], {}, p[6], p[7])   # :types but no constants
-        elif p[5][0] == "constants":
-            p[0] = Domain(p[3], p[4], {}, p[5][1], p[6], p[7])   # no :types, but :constants
-    elif len(p) == 8:
-        p[0] = Domain(p[3], p[4], {}, {}, p[5], p[6]) # no :constants or :types
+        '''domain   : LPAREN DEFINE_KEY domain_def domain_body_def RPAREN'''
+
+        domain_body = p[4]
+
+        name = p[3]
+        requirements = domain_body.get('requirements', None)
+        types = domain_body.get('types', {})
+        constants = domain_body.get('constants', {})
+        predicates = domain_body.get('predicates', None)
+        actions = domain_body.get('actions', None)
+
+        p[0] = Domain(name, requirements, types, constants, predicates, actions)
+
+        # print("Domain Parsed")
+
+
+def p_domain_body_def(p):
+    '''domain_body_def  : types_def domain_body_def
+                        | require_def domain_body_def
+                        | constants_def domain_body_def
+                        | predicates_def domain_body_def
+                        | actions_def'''
+    if len(p) == 3:
+        p[0] = p[1] | p[2]
+    else:
+        p[0] = p[1]
+
+# def p_domain_old(p):
+#     '''domain : LPAREN DEFINE_KEY domain_def require_def types_def constants_def predicates_def action_def_lst RPAREN
+#               | LPAREN DEFINE_KEY domain_def require_def types_def predicates_def action_def_lst RPAREN
+#               | LPAREN DEFINE_KEY domain_def require_def constants_def predicates_def action_def_lst RPAREN
+#               | LPAREN DEFINE_KEY domain_def require_def predicates_def action_def_lst RPAREN'''
+#     if len(p) == 10:    # both types and constants are given
+#         p[0] = Domain(p[3], p[4], p[5][1], p[6][1], p[7], p[8])   # both :types and :constants
+#     elif len(p) == 9:   # p[5] is a tuple ("types", ....)
+#         if p[5][0] == "types":
+#             p[0] = Domain(p[3], p[4], p[5][1], {}, p[6], p[7])   # :types but no constants
+#         elif p[5][0] == "constants": # p[5] is a tuple ("constants", ....)
+#             p[0] = Domain(p[3], p[4], {}, p[5][1], p[6], p[7])   # no :types, but :constants
+#     elif len(p) == 8:
+#         p[0] = Domain(p[3], p[4], {}, {}, p[5], p[6]) # no :constants or :types
 
 def p_domain_def(p):
     '''domain_def : LPAREN DOMAIN_KEY NAME RPAREN'''
     p[0] = p[3]
 
-
+# https://planning.wiki/ref/pddl/domain#requirements
 def p_require_def(p):
     '''require_def : LPAREN REQUIREMENTS_KEY require_key_lst RPAREN'''
-    p[0] = p[3]
+    p[0] = {"requirements" : p[3]}
 
 
 def p_require_key_lst(p):
@@ -196,11 +225,11 @@ def p_require_key(p):
 
 def p_types_def(p):
     '''types_def : LPAREN TYPES_KEY typed_names_lst RPAREN'''
-    p[0] = ("types", p[3])
+    p[0] = {"types" : p[3]}
 
 def p_constants_def(p):
     '''constants_def : LPAREN CONSTANTS_KEY typed_names_lst RPAREN'''
-    p[0] = ("constants", p[3])
+    p[0] = {"constants" : p[3]}
 
 # Used for processing :types and :constants
 #   list of names, possibly typed using hyphen -
@@ -224,7 +253,7 @@ def p_typed_names_lst(p):
 
 def p_predicates_def(p):
     '''predicates_def : LPAREN PREDICATES_KEY predicate_def_lst RPAREN'''
-    p[0] = p[3]
+    p[0] = {"predicates" : p[3]}
 
 
 def p_predicate_def_lst(p):
@@ -246,11 +275,15 @@ def p_predicate_def(p):
         p[0] = Predicate(p[2], p[3])
 
 
+def p_actions_def(p):
+    '''actions_def : action_def_lst'''
+    p[0] = {"actions" : p[1]}
+
 def p_action_def_lst(p):
     '''action_def_lst : action_def action_def_lst
-                      | action_def'''
+                      | empty'''
     if len(p) == 2:
-        p[0] = [p[1]]
+        p[0] = []
     elif len(p) == 3:
         p[0] = [p[1]] + p[2]
 
@@ -538,13 +571,13 @@ def p_goal_def(p):
         p[0] = p[3]
 
 
-
+def p_empty(p):
+        '''empty    :'''
+        pass
 
 
 def p_error(p):
     print("Error: syntax error when parsing '{}'".format(p))
-
-
 
 
 

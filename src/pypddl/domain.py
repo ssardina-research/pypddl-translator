@@ -85,7 +85,8 @@ class Domain(object):
 
     def __str__(self):
         domain_str  = '@ Domain: {0}\n'.format(self._name)
-        domain_str += '>> requirements: {0}\n'.format(', '.join(self._requirements))
+        if self._requirements is not None:
+            domain_str += '>> requirements: {0}\n'.format(', '.join(self._requirements))
         domain_str += '>> types: {0}\n'.format(', '.join(self._types))
         domain_str += '>> predicates: {0}\n'.format(', '.join(map(str, self._predicates)))
         domain_str += '>> operators:\n    {0}\n'.format(
@@ -93,37 +94,39 @@ class Domain(object):
         return domain_str
 
     def __repr__(self):
-        types_txt = ''
+        pddl_str = f'(define (domain {self._name})\n'
+
+        if self._requirements is not None:
+            requirements = ' '.join(self._requirements)
+            pddl_str += f'\t(:requirements {requirements})\n'
+
+
         if len(self._types):    # if there are some :types defined
             types_txt = ' '.join(
                 '\t\t{} - {}\n'.format(' '.join(self._types[t]), t) for t in self._types.keys() if not t == '')
-        if '' in self._types.keys():
-            types_txt = '\t\t{} {}\n'.format(types_txt, ' '.join(t for t in self._types['']))
 
-        constants_txt = ''
+            if '' in self._types.keys():    # the case of types without subtypes
+                types_txt = '\t\t{} {}\n'.format(types_txt, ' '.join(t for t in self._types['']))
+
+            pddl_str += f'\t(:types \n{types_txt}\t)\n'
+
         if len(self._constants):    # there are :constants defined
             constants_txt = ' '.join(
                 '\t\t{} - {}\n'.format(' '.join(self._constants[t]), t) for t in self._constants.keys() if not t == '')
-        if '' in self._constants.keys():
-            constants_txt = '\t\t{} {}\n'.format(constants_txt, ' '.join(t for t in self._constants['']))
+
+            if '' in self._constants.keys():
+                constants_txt = '\t\t{} {}\n'.format(constants_txt, ' '.join(t for t in self._constants['']))
+
+            pddl_str += f'\t(:constants \n{constants_txt}\t)\n'
 
 
-        pddl_str = '(define (domain {domain_name})\n' \
-                   '\t(:requirements {requirements})\n' \
-                   '{types}' \
-                   '{constants}' \
-                   '\t(:predicates\n' \
-                   '\t\t{predicates}\n' \
-                   '\t)\n' \
-                   '{actions}\n' \
-                   ')'. \
-            format(domain_name=self._name,
-                   requirements=' '.join(self._requirements),
-                   types='\t(:types \n{}\t)\n'.format(types_txt) if types_txt else '',
-                   constants='\t(:constants \n{}\t)\n'.format(constants_txt) if constants_txt else '',
-                   predicates='\n\t\t'.join(repr(pred) for pred in self._predicates),
-                   actions='\n'.join(repr(act) for act in self._operators)
-                   )
+        predicates = '\n\t\t'.join(repr(pred) for pred in self._predicates)
+        pddl_str += f'\t(:predicates\n \t\t{predicates}\n\t)\n'
+
+        actions='\n'.join(repr(act) for act in self._operators)
+        pddl_str += f'{actions}\n'
+
+        pddl_str += f')'
 
         return pddl_str
 
