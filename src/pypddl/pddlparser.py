@@ -289,8 +289,13 @@ def p_action_def_lst(p):
 
 
 def p_action_def(p):
-    '''action_def : LPAREN ACTION_KEY NAME parameters_def action_def_body RPAREN'''
-    p[0] = Action(p[3], p[4], p[5][0], p[5][1])
+    '''action_def : LPAREN ACTION_KEY NAME parameters_def action_def_body RPAREN
+                    | LPAREN ACTION_KEY NAME action_def_body RPAREN'''
+
+    if len(p) == 7:
+        p[0] = Action(p[3], p[4], p[5][0], p[5][1])
+    elif len(p) == 6:
+        p[0] = Action(p[3], [], p[4][0], p[4][1])
 
 
 def p_parameters_def(p):
