@@ -54,6 +54,7 @@ tokens = (
     'EFFECT_KEY',
     'AND_KEY',
     'NOT_KEY',
+    'FORALL_KEY',
     'ONEOF_KEY',
     'PROBABILISTIC_KEY',
     'PROBLEM_KEY',
@@ -339,9 +340,13 @@ def p_effects_def(p):
     if len(p) == 3:
         p[0] = p[2]
 
+# forall is not well done, only at the top level
+# forall is also not accounted in prec
+# a completely new re-work of formuals is needed to do it well
 def p_act_effects_lst(p):   # always returns a list of effects: all must happen!
     '''act_effects_lst : atomic_effect
                 | LPAREN AND_KEY and_effects_lst RPAREN
+                | LPAREN FORALL_KEY and_effects_lst RPAREN
                 | LPAREN ONEOF_KEY oneof_effects_lst RPAREN
                 | LPAREN WHEN_KEY deterministic_effect act_effects_lst RPAREN'''
     if len(p) == 2:
@@ -350,8 +355,10 @@ def p_act_effects_lst(p):   # always returns a list of effects: all must happen!
         p[0] = p[3] # p[3] will be a list as per and rule
     elif len(p) == 5 and p[2] == 'oneof':   # this is not nice, we should use ONEOF_KEY
         p[0] = [("oneof", p[3])]
-    elif len(p) == 6:   # when
+    elif len(p) == 6 and p[2] == 'when':   # when
         p[0] = [("when", p[3], p[4])]
+    elif len(p) == 6 and p[2] == 'forall':   # forall
+        p[0] = [("forall", p[3])]
 
 def p_and_effects_lst(p):   # a list of effects
     '''and_effects_lst : act_effects_lst

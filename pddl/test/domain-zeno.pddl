@@ -58,7 +58,7 @@
         (and (not-boarding ?p) (not-debarking ?p))))
     :effect (and (not (at-aircraft ?a ?c1)) (zooming ?a ?c2))
   )
-  
+
   (:action complete-zooming
     :parameters (?a - aircraft ?c2 - city ?l1 ?l2 ?l3 - flevel)
     :precondition (and (zooming ?a ?c2) (fuel-level ?a ?l1) (next ?l2 ?l1) (next ?l3 ?l2))

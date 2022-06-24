@@ -1,6 +1,6 @@
 # pypddl-translator
 
-PDDL's domain and problem parser+translator in Python3 using [ply](http://www.dabeaz.com/ply/) library. 
+PDDL's domain and problem parser+translator in Python3 using [ply](http://www.dabeaz.com/ply/) library.
 
 This is an significant extension and refactoring of [pypddl-parser](https://github.com/thiagopbueno/pypddl-parser), by Sebastian Sardina and Alberto Pozanco (2019-2020).
 
@@ -9,7 +9,7 @@ This is an significant extension and refactoring of [pypddl-parser](https://gith
 * Can read PDDL planning domains and problems as one single file, or in two separated files (domain and problem).
 * Ability to printout planning domains and problems to console or files.
 * Interface to modify planning domains and problems.
-* Can handle typed and untyped (if there is only one) objects and parameters.
+* Can handle typed and un-typed (if there is only one) objects and parameters.
 * Can read labeled PDDL planning domains and problems given in two separated files (domain and problem)
 * Can produce MTP domain and problem files from a labeled PDDL planning and problem description
 
@@ -17,14 +17,14 @@ This is an significant extension and refactoring of [pypddl-parser](https://gith
 
 * Supports ```:requirements :strips, :typing, :equality, :probabilistic-effects```.
 * Relations between types:  `(:types type1 type2 ... typen - type ...)`
-* Non-deterministic effects via `oneof`.
+* Non-deterministic effects via `oneof` (arbitrary form).
 * Conditional effects via `when` keyword.
-* Labelled effects (used in MTP to label oneof).
+* Labelled effects (used in MTP to label `oneof`).
 
 **Problems:**
 
 * Planning problems, via keyword  `problem`.
-* Labeled oneof goals (used in MTP).
+* Labeled `oneof` goals (used in MTP).
 
 ## Setup
 
@@ -70,9 +70,6 @@ Required-by:
 ```
 
 To uninstall the system:  `pip uninstall pypddl`
-
-
-
 
 ## Usage examples
 
