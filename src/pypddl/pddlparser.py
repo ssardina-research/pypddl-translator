@@ -37,10 +37,14 @@ tokens = (
     'REQUIREMENTS_KEY',
     'STRIPS_KEY',
     'NEGPRECOND_KEY',
+    'DISJPRECOND_KEY',
+    'UNIVPRECOND_KEY',
+    'EXISTPRECOND_KEY', 
     'EQUALITY_KEY',
     'TYPING_KEY',
     'PROBABILISTIC_EFFECTS_KEY',
     'NONDETERMINISTIC_KEY',
+    'CONDEFFECTS_KEY',
     'TYPES_KEY',
     'CONSTANTS_KEY',
     'PREDICATES_KEY',
@@ -77,7 +81,11 @@ reserved = {
     ':typing'                   : 'TYPING_KEY',
     ':probabilistic-effects'    : 'PROBABILISTIC_EFFECTS_KEY',
     ':non-deterministic'        : 'NONDETERMINISTIC_KEY',
-    ':negative-preconditions'   : "NEGPRECOND_KEY",
+    ':conditional-effects'      : 'CONDEFFECTS_KEY',
+    ':negative-preconditions'   : 'NEGPRECOND_KEY',
+    ':disjunctive-preconditions' : 'DISJPRECOND_KEY',
+    ':universal-preconditions'  : 'UNIVPRECOND_KEY',
+    ':existential-preconditions': 'EXISTPRECOND_KEY',
     ':types'                    : 'TYPES_KEY',
     ':predicates'               : 'PREDICATES_KEY',
     ':action'                   : 'ACTION_KEY',
@@ -218,7 +226,11 @@ def p_require_key(p):
                    | EQUALITY_KEY
                    | TYPING_KEY
                    | NONDETERMINISTIC_KEY
+                   | CONDEFFECTS_KEY
                    | NEGPRECOND_KEY
+                   | DISJPRECOND_KEY
+                   | UNIVPRECOND_KEY
+                   | EXISTPRECOND_KEY
                    | PROBABILISTIC_EFFECTS_KEY'''
     p[0] = str(p[1])
 
