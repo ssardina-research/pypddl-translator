@@ -1,5 +1,8 @@
 # pypddl-translator
 
+## Archived, now using pddl parser: https://github.com/AI-Planning/pddl
+
+
 PDDL's domain and problem parser+translator in Python3 using [ply](http://www.dabeaz.com/ply/) library.
 
 This is an significant extension and refactoring of [pypddl-parser](https://github.com/thiagopbueno/pypddl-parser), by Sebastian Sardina and Alberto Pozanco (2019-2020).
